@@ -49,9 +49,9 @@ const CardNav: React.FC<CardNavProps> = ({
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
   // Dynamic button text and navigation based on current route
-  const isOnOperationPage = location.pathname === '/operation';
-  const buttonText = isOnOperationPage ? 'Home' : 'Get Started';
-  const targetRoute = isOnOperationPage ? '/home' : '/operation';
+  const isOnLandingPage = location.pathname === '/' || location.pathname === '/home';
+  const buttonText = isOnLandingPage ? 'Get Started' : 'Home';
+  const targetRoute = isOnLandingPage ? '/operation' : '/operation';
 
   const handleGetStartedClick = () => {
     navigate(targetRoute);
@@ -204,7 +204,7 @@ const CardNav: React.FC<CardNavProps> = ({
 
           <button
             type="button"
-            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-colors duration-300"
+            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
             style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
             onClick={handleGetStartedClick}
           >
