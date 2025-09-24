@@ -1,4 +1,4 @@
-import Beams from './pages/Beams';
+import Beams from './ui/Beams';
 import type { FC, ReactNode } from 'react';
 
 interface BackgroundWrapperProps {

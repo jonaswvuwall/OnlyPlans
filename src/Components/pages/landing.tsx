@@ -1,5 +1,5 @@
-import Beams from './Beams';
-import CardNav from './CardNav';
+import Beams from '../ui/Beams';
+import CardNav from '../ui/CardNav';
 import type { FC } from 'react';
 
 const Landing: FC = () => {
