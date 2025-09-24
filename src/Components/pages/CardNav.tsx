@@ -252,11 +252,12 @@ const CardNav: React.FC<CardNavProps> = ({
                 {item.links?.map((lnk, i) => (
                   <a
                     key={`${lnk.label}-${i}`}
-                    className="nav-card-link inline-flex items-center gap-[6px] no-underline cursor-pointer transition-opacity duration-300 hover:opacity-75 text-[15px] md:text-[16px]"
+                    className="nav-card-link inline-flex items-center gap-[6px] no-underline cursor-pointer transition-opacity duration-300 hover:opacity-75 text-[15px] md:text-[16px] !text-white"
                     href={lnk.href}
                     aria-label={lnk.ariaLabel}
+                    style={{ color: '#ffffff' }}
                   >
-                    <GoArrowUpRight className="nav-card-link-icon shrink-0" aria-hidden="true" />
+                    <GoArrowUpRight className="nav-card-link-icon shrink-0 text-white" aria-hidden="true" />
                     {lnk.label}
                   </a>
                 ))}

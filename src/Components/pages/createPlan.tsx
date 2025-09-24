@@ -21,29 +21,26 @@ const CreatePlan: FC = () => {
       bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: 'Planning Tools', href: '/planning', ariaLabel: 'Go to Planning Tools' },
-        { label: 'Analytics', href: '/analytics', ariaLabel: 'Go to Analytics' },
-        { label: 'Templates', href: '/templates', ariaLabel: 'Go to Templates' }
+        { label: 'Planning Tools', href: '/operation', ariaLabel: 'Go to Planning Tools' },
+        { label: 'Planned Features', href: 'https://rickrolllol.yourwebsitespace.com/', ariaLabel: 'Go to Planned Features' }
       ]
     },
     {
       label: 'Resources',
-      bgColor: '#EC4899',
+      bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: 'Documentation', href: '/docs', ariaLabel: 'Go to Documentation' },
-        { label: 'Tutorials', href: '/tutorials', ariaLabel: 'Go to Tutorials' },
-        { label: 'Support', href: '/support', ariaLabel: 'Go to Support' }
+        { label: 'Documentation', href: 'https://github.com/jonaswvuwall/OnlyPlans/wiki', ariaLabel: 'Go to Documentation' },
+        { label: 'Support', href: '/https://www.support.com/', ariaLabel: 'Go to Support' }
       ]
     },
     {
       label: 'Company',
-      bgColor: '#10B981',
+      bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: 'About Us', href: '/about', ariaLabel: 'Go to About Us' },
-        { label: 'Careers', href: '/careers', ariaLabel: 'Go to Careers' },
-        { label: 'Contact', href: '/contact', ariaLabel: 'Go to Contact' }
+        { label: 'Jonas Wintrich', href: 'https://www.linkedin.com/in/jonas-wintrich-a31bb61ba/', ariaLabel: 'Go to Jonas Wintrich LinkedIn' },
+        { label: 'Benjamin Klein', href: 'https://www.linkedin.com/in/benjamin-klein-549906336/', ariaLabel: 'Go to Benjamin Klein LinkedIn' }
       ]
     }
   ];
