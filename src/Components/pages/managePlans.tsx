@@ -10,7 +10,7 @@ interface Plan {
   name: string;
   description: string;
   createdDate: string;
-  processCount: number;  // Changed from taskCount to processCount
+  activityCount: number;  // Changed from processCount to activityCount
   status: string;
 }
 
@@ -133,7 +133,7 @@ const ManagePlans: FC = () => {
                         <p className="text-white/70 mb-3">{plan.description}</p>
                         <div className="flex gap-4 text-sm text-white/60">
                           <span>Created: {plan.createdDate}</span>
-                          <span>Processes: {plan.processCount}</span>
+                          <span>Activities: {plan.activityCount}</span>
                           <span>Status: {plan.status}</span>
                         </div>
                       </div>

@@ -4,13 +4,13 @@ import { Button } from '../ui/button';
 import { useState } from 'react';
 import type { FC } from 'react';
 
-// Define the structure for a process/activity (Vorgang)
-interface PlanProcess {
-  id: string;
-  vorgangsname: string;    // Process Name
-  vorgangsid: string;      // Process ID
-  dauer: string;           // Duration
-  vorgaengerid: string;    // Predecessor ID
+// Define the structure for an activity (Vorgang)
+interface PlanActivity {
+  id: string;                    // Internal unique ID
+  referenceNumber: number;       // Reference Number (1, 2, 3, etc.) - auto-generated
+  activityName: string;          // Activity Name
+  dauer: string;                 // Duration
+  vorgaengerid: string;         // Predecessor Reference Number
 }
 
 const CreatePlan: FC = () => {
@@ -52,12 +52,12 @@ const CreatePlan: FC = () => {
   const [planName, setPlanName] = useState('');
   const [planDescription, setPlanDescription] = useState('');
 
-  // Table data state - now for processes (Vorgänge)
-  const [processes, setProcesses] = useState<PlanProcess[]>([
+  // Table data state - now for activities (Vorgänge)
+  const [activities, setActivities] = useState<PlanActivity[]>([
     {
       id: '1',
-      vorgangsname: '',
-      vorgangsid: '',
+      referenceNumber: 1,
+      activityName: '',
       dauer: '',
       vorgaengerid: ''
     }
@@ -65,25 +65,32 @@ const CreatePlan: FC = () => {
 
   // Add new row to the table
   const addRow = () => {
-    const newProcess: PlanProcess = {
+    const newReferenceNumber = activities.length + 1;
+    const newActivity: PlanActivity = {
       id: Date.now().toString(),
-      vorgangsname: '',
-      vorgangsid: '',
+      referenceNumber: newReferenceNumber,
+      activityName: '',
       dauer: '',
       vorgaengerid: ''
     };
-    setProcesses([...processes, newProcess]);
+    setActivities([...activities, newActivity]);
   };
 
   // Remove row from table
   const removeRow = (id: string) => {
-    setProcesses(processes.filter(process => process.id !== id));
+    const updatedActivities = activities
+      .filter(activity => activity.id !== id)
+      .map((activity, index) => ({
+        ...activity,
+        referenceNumber: index + 1 // Recalculate reference numbers
+      }));
+    setActivities(updatedActivities);
   };
 
-  // Update process data
-  const updateProcess = (id: string, field: keyof PlanProcess, value: string) => {
-    setProcesses(processes.map(process => 
-      process.id === id ? { ...process, [field]: value } : process
+  // Update activity data
+  const updateActivity = (id: string, field: keyof PlanActivity, value: string) => {
+    setActivities(activities.map(activity => 
+      activity.id === id ? { ...activity, [field]: value } : activity
     ));
   };
 
@@ -92,7 +99,7 @@ const CreatePlan: FC = () => {
     const plan = {
       name: planName,
       description: planDescription,
-      processes: processes,
+      activities: activities,
       createdDate: new Date().toISOString().split('T')[0],
       status: 'Active'
     };
@@ -173,7 +180,7 @@ const CreatePlan: FC = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold text-white">Plan Vorgänge</h2>
               <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105 active:scale-95">
-                + Add Process
+                + Add Activity
               </Button>
             </div>
             
@@ -182,39 +189,35 @@ const CreatePlan: FC = () => {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="text-left text-white font-medium p-3 min-w-[200px]">Process Name</th>
-                    <th className="text-left text-white font-medium p-3 min-w-[120px]">Process ID</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[150px]">Reference Number</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[200px]">Activity Name</th>
                     <th className="text-left text-white font-medium p-3 min-w-[120px]">Duration</th>
-                    <th className="text-left text-white font-medium p-3 min-w-[120px]">Predecessor ID</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[120px]">Predecessor Reference Number</th>
                     <th className="text-left text-white font-medium p-3 w-[80px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {processes.map((process) => (
-                    <tr key={process.id} className="border-b border-white/10 hover:bg-white/5">
+                  {activities.map((activity) => (
+                    <tr key={activity.id} className="border-b border-white/10 hover:bg-white/5">
+                      <td className="p-3">
+                        <div className="flex items-center justify-center">
+                          <span className="text-white font-medium">{activity.referenceNumber}</span>
+                        </div>
+                      </td>
                       <td className="p-3">
                         <input
                           type="text"
-                          value={process.vorgangsname}
-                          onChange={(e) => updateProcess(process.id, 'vorgangsname', e.target.value)}
-                          placeholder="Enter process name..."
+                          value={activity.activityName}
+                          onChange={(e) => updateActivity(activity.id, 'activityName', e.target.value)}
+                          placeholder="Enter activity name..."
                           className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </td>
                       <td className="p-3">
                         <input
                           type="text"
-                          value={process.vorgangsid}
-                          onChange={(e) => updateProcess(process.id, 'vorgangsid', e.target.value)}
-                          placeholder="ID..."
-                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                        />
-                      </td>
-                      <td className="p-3">
-                        <input
-                          type="text"
-                          value={process.dauer}
-                          onChange={(e) => updateProcess(process.id, 'dauer', e.target.value)}
+                          value={activity.dauer}
+                          onChange={(e) => updateActivity(activity.id, 'dauer', e.target.value)}
                           placeholder="Duration..."
                           className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
@@ -222,16 +225,16 @@ const CreatePlan: FC = () => {
                       <td className="p-3">
                         <input
                           type="text"
-                          value={process.vorgaengerid}
-                          onChange={(e) => updateProcess(process.id, 'vorgaengerid', e.target.value)}
-                          placeholder="Predecessor ID..."
+                          value={activity.vorgaengerid}
+                          onChange={(e) => updateActivity(activity.id, 'vorgaengerid', e.target.value)}
+                          placeholder="Predecessor Reference No."
                           className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </td>
                       <td className="p-3">
-                        {processes.length > 1 && (
+                        {activities.length > 1 && (
                           <Button
-                            onClick={() => removeRow(process.id)}
+                            onClick={() => removeRow(activity.id)}
                             size="sm"
                             variant="outline"
                             className="border-red-500 text-red-400 hover:bg-red-500/20"

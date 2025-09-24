@@ -57,6 +57,10 @@ const CardNav: React.FC<CardNavProps> = ({
     navigate(targetRoute);
   };
 
+  const handleLandingClick = () => {
+    navigate('/home');
+  };
+
   const calculateHeight = () => {
     const navEl = navRef.current;
     if (!navEl) return 260;
@@ -202,14 +206,30 @@ const CardNav: React.FC<CardNavProps> = ({
             <img src={logo} alt={logoAlt} className="logo h-[28px]" />
           </div>
 
-          <button
-            type="button"
-            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
-            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-            onClick={handleGetStartedClick}
-          >
-            {buttonText}
-          </button>
+          <div className="hidden md:flex items-center gap-2">
+            {!isOnLandingPage && (
+              <button
+                type="button"
+                className="card-nav-cta-button inline-flex items-center justify-center border-0 rounded-[calc(0.75rem-0.2rem)] px-3 h-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                onClick={handleLandingClick}
+                title="Go to Landing Page"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                </svg>
+              </button>
+            )}
+            
+            <button
+              type="button"
+              className="card-nav-cta-button inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+              onClick={handleGetStartedClick}
+            >
+              {buttonText}
+            </button>
+          </div>
         </div>
 
         <div
