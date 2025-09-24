@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
-import BackgroundWrapper from './Components/background'
+import BackgroundWrapper from './Components/ui/background'
 import PageTransition from './Components/PageTransition'
 import './App.css'
 import Landing from './Components/pages/landing'
