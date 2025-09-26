@@ -175,7 +175,7 @@ const CreatePlan: FC = () => {
 
             {/* Table Header */}
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-white">Activities</h2>
+              <h2 className="text-2xl font-semibold text-white">Plan Vorgänge</h2>
               <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105 active:scale-95">
                 + Add Activity
               </Button>
