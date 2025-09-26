@@ -15,7 +15,8 @@ db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS netzplaene (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL
+      name TEXT NOT NULL,
+      description TEXT
     )
   `);
 
@@ -23,6 +24,7 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS aktivitaeten (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       netzplan_id INTEGER,
+      ref_number INTEGER NOT NULL,
       name TEXT NOT NULL,
       dauer INTEGER,
       FOREIGN KEY (netzplan_id) REFERENCES netzplaene(id)
@@ -54,13 +56,13 @@ app.get("/netzplaene", (_req, res) => {
 
 // Neuen Netzplan erstellen
 app.post("/netzplaene", (req, res) => {
-  const { name } = req.body;
+  const { name, description } = req.body;
   db.run(
-    "INSERT INTO netzplaene (name) VALUES (?)",
-    [name],
+    "INSERT INTO netzplaene (name, description) VALUES (?, ?)",
+    [name, description],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID, name });
+      res.json({ id: this.lastID, name, description });
     }
   );
 });
@@ -73,7 +75,7 @@ app.post("/netzplaene", (req, res) => {
 app.get("/netzplaene/:id/aktivitaeten", (req, res) => {
   const netzplanId = parseInt(req.params.id);
   db.all(
-    "SELECT * FROM aktivitaeten WHERE netzplan_id = ?",
+    "SELECT * FROM aktivitaeten WHERE netzplan_id = ? ORDER BY ref_number ASC",
     [netzplanId],
     async (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -101,11 +103,11 @@ app.get("/netzplaene/:id/aktivitaeten", (req, res) => {
 
 // Neue Aktivität erstellen
 app.post("/aktivitaeten", (req, res) => {
-  const { netzplan_id, name, dauer, vorgaenger = [] } = req.body;
+  const { netzplan_id, ref_number, name, dauer, vorgaenger = [] } = req.body;
 
   db.run(
-    "INSERT INTO aktivitaeten (netzplan_id, name, dauer) VALUES (?, ?, ?)",
-    [netzplan_id, name, dauer],
+    "INSERT INTO aktivitaeten (netzplan_id, ref_number, name, dauer) VALUES (?, ?, ?, ?)",
+    [netzplan_id, ref_number, name, dauer],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
       const aktivitaetId = this.lastID;
@@ -120,6 +122,7 @@ app.post("/aktivitaeten", (req, res) => {
       res.json({
         id: aktivitaetId,
         netzplan_id,
+        ref_number,
         name,
         dauer,
         vorgaenger,
@@ -131,11 +134,11 @@ app.post("/aktivitaeten", (req, res) => {
 // Aktivität updaten
 app.put("/aktivitaeten/:id", (req, res) => {
   const id = parseInt(req.params.id);
-  const { name, dauer, vorgaenger = [] } = req.body;
+  const { ref_number, name, dauer, vorgaenger = [] } = req.body;
 
   db.run(
-    "UPDATE aktivitaeten SET name = ?, dauer = ? WHERE id = ?",
-    [name, dauer, id],
+    "UPDATE aktivitaeten SET ref_number = ?, name = ?, dauer = ? WHERE id = ?",
+    [ref_number, name, dauer, id],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
 
@@ -150,7 +153,7 @@ app.put("/aktivitaeten/:id", (req, res) => {
         vorgaenger.forEach(vId => stmt.run(id, vId));
         stmt.finalize();
 
-        res.json({ id, name, dauer, vorgaenger });
+        res.json({ id, ref_number, name, dauer, vorgaenger });
       });
     }
   );
