@@ -1,4 +1,3 @@
-import Beams from '../ui/Beams';
 import CardNav from '../ui/CardNav';
 import { Button } from '../ui/button';
 import { useState } from 'react';
@@ -107,19 +106,6 @@ const CreatePlan: FC = () => {
 
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center pt-8">
-      {/* Background Beams */}
-      <div className="absolute inset-0">
-        <Beams
-          beamWidth={2}
-          beamHeight={15}
-          beamNumber={8}
-          lightColor="#B069DB"
-          speed={4}
-          noiseIntensity={1.75}
-          scale={0.1}
-          rotation={40}
-        />
-      </div>
       
       {/* CardNav */}
       <CardNav
