@@ -1,76 +1,14 @@
-import CardNav from './CardNav';
 import type { FC, ReactNode } from 'react';
 
 interface LayoutProps {
   children: ReactNode;
-  showGetStartedButton?: boolean;
 }
 
-const Layout: FC<LayoutProps> = ({ children, showGetStartedButton = false }) => {
-  // CardNav data
-  const navItems = [
-    {
-      label: 'Products',
-      bgColor: '#8B5CF6',
-      textColor: '#ffffff',
-      links: [
-        { label: 'Planning Tools', href: '/operation', ariaLabel: 'Go to Planning Tools' },
-        { label: 'Planned Features', href: 'https://rickrolllol.yourwebsitespace.com/', ariaLabel: 'Go to Planned Features' }
-      ]
-    },
-    {
-      label: 'Resources',
-      bgColor: '#8B5CF6',
-      textColor: '#ffffff',
-      links: [
-        { label: 'Documentation', href: 'https://github.com/jonaswvuwall/OnlyPlans/wiki', ariaLabel: 'Go to Documentation' },
-        { label: 'Support', href: '/https://www.support.com/', ariaLabel: 'Go to Support' }
-      ]
-    },
-    {
-      label: 'Company',
-      bgColor: '#8B5CF6',
-      textColor: '#ffffff',
-      links: [
-        { label: 'Jonas Wintrich', href: 'https://www.linkedin.com/in/jonas-wintrich-a31bb61ba/', ariaLabel: 'Go to Jonas Wintrich LinkedIn' },
-        { label: 'Benjamin Klein', href: 'https://www.linkedin.com/in/benjamin-klein-549906336/', ariaLabel: 'Go to Benjamin Klein LinkedIn' }
-      ]
-    }
-  ];
-
-  // Add Get Started button to navigation if requested (for landing page)
-  const navItemsWithGetStarted = showGetStartedButton 
-    ? [
-        ...navItems,
-        {
-          label: 'Get Started',
-          bgColor: '#8B5CF6',
-          textColor: '#ffffff',
-          links: [
-            { label: 'Start Planning', href: '/operation', ariaLabel: 'Go to Planning Tools' }
-          ]
-        }
-      ]
-    : navItems;
-
+const Layout: FC<LayoutProps> = ({ children }) => {
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center">
-      
-      {/* CardNav */}
-      <div className="w-full pt-8 px-4">
-        <CardNav
-          logo="/Logo_small-Photoroom.png"
-          logoAlt="OnlyPlans Logo"
-          items={navItemsWithGetStarted}
-          baseColor="#D3D3D3"
-          menuColor="#333333"
-          buttonBgColor="#8B5CF6"
-          buttonTextColor="#ffffff"
-        />
-      </div>
-      
-      {/* Main Content */}
-      <div className="relative z-10 flex-grow w-full">
+      {/* Main Content with top padding to account for fixed header */}
+      <div className="relative z-10 flex-grow w-full pt-24">
         {children}
       </div>
       
