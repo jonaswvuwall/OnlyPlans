@@ -1,4 +1,4 @@
-import DarkVeil from './darkveil';
+import DarkVeil from './DarkVeil';
 import type { FC, ReactNode } from 'react';
 
 interface BackgroundWrapperProps {
