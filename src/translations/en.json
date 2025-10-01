@@ -150,12 +150,12 @@
     }
   },
   "editPlans": {
-    "title": "Edit Plans",
-    "subtitle": "Select and edit your existing project plans.",
-    "selectPlan": "Select a Plan to Edit",
+    "title": "Manage Plans",
+    "subtitle": "Select and manage your existing project plans.",
+    "selectPlan": "Select a Plan to Manage",
     "createNewPlan": "Create New Plan",
     "noPlans": {
-      "title": "No Plans to Edit",
+      "title": "No Plans to Manage",
       "description": "You don't have any plans yet. Create your first plan to get started.",
       "createButton": "Create Your First Plan"
     },
@@ -181,9 +181,9 @@
         "button": "Create Plan"
       },
       "editPlans": {
-        "title": "Edit Plans",
-        "description": "Edit and modify your existing project plans and activities.",
-        "button": "Edit Plans"
+        "title": "Manage Plans",
+        "description": "View, edit and manage your existing project plans and activities.",
+        "button": "Manage Plans"
       }
     }
   },

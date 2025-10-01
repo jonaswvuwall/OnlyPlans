@@ -167,12 +167,12 @@
     }
   },
   "editPlans": {
-    "title": "Pläne Bearbeiten",
-    "subtitle": "Wählen und bearbeiten Sie Ihre bestehenden Projektpläne.",
-    "selectPlan": "Plan zum Bearbeiten Auswählen",
+    "title": "Pläne Verwalten",
+    "subtitle": "Wählen und verwalten Sie Ihre bestehenden Projektpläne.",
+    "selectPlan": "Plan zum Verwalten Auswählen",
     "createNewPlan": "Neuen Plan Erstellen",
     "noPlans": {
-      "title": "Keine Pläne zum Bearbeiten",
+      "title": "Keine Pläne zum Verwalten",
       "description": "Sie haben noch keine Pläne. Erstellen Sie Ihren ersten Plan, um zu beginnen.",
       "createButton": "Ersten Plan Erstellen"
     },
@@ -198,9 +198,9 @@
         "button": "Plan Erstellen"
       },
       "editPlans": {
-        "title": "Pläne Bearbeiten",
-        "description": "Bearbeiten und modifizieren Sie Ihre bestehenden Projektpläne und Aktivitäten.",
-        "button": "Pläne Bearbeiten"
+        "title": "Pläne Verwalten",
+        "description": "Anzeigen, bearbeiten und verwalten Sie Ihre bestehenden Projektpläne und Aktivitäten.",
+        "button": "Pläne Verwalten"
       }
     }
   },

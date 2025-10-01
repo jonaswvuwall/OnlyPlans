@@ -36,9 +36,8 @@ const EditPlans: FC = () => {
   ];
 
   const handleEditPlan = (planId: string) => {
-    // Navigate to create-plan page with plan data for editing
-    // For now, just navigate to create-plan - will be enhanced later
-    navigate('/create-plan', { state: { editMode: true, planId } });
+    // Navigate to edit-plan page with planId parameter
+    navigate(`/edit-plan/${planId}`);
   };
 
   const handleViewPlan = (planId: string) => {

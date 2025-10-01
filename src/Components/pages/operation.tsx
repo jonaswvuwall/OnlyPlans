@@ -45,7 +45,7 @@ const Operation: FC = () => {
               <p className="text-white/70 mb-6 flex-grow">{t('operation.cards.editPlans.description')}</p>
               <Button 
                 className="w-full mt-auto transition-all duration-300 hover:scale-105 active:scale-95"
-                onClick={() => navigate('/edit-plans')}
+                onClick={() => navigate('/manage-plans')}
               >
                 {t('operation.cards.editPlans.button')}
               </Button>

@@ -37,9 +37,14 @@ function AnimatedRoutes() {
             <CreatePlan />
           </PageTransition>
         } />
-        <Route path="/edit-plans" element={
+        <Route path="/manage-plans" element={
           <PageTransition>
             <EditPlans />
+          </PageTransition>
+        } />
+        <Route path="/edit-plan/:planId" element={
+          <PageTransition>
+            <CreatePlan />
           </PageTransition>
         } />
         <Route path="/visualization" element={
