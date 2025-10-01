@@ -169,7 +169,9 @@
       "delete": "Delete"
     },
     "deleteConfirmation": "Are you sure you want to delete the plan '{planName}'? This action cannot be undone.",
-    "deleteSuccess": "Plan deleted successfully!"
+    "deleteSuccess": "Plan deleted successfully!",
+    "deleteError": "Failed to delete plan. Please try again.",
+    "loadError": "Failed to load plans from the database."
   },
   "operation": {
     "title": "Operations",

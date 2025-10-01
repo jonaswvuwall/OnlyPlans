@@ -52,6 +52,16 @@ app.get("/netzplaene", (_req, res) => {
   });
 });
 
+// GET single Netzplan by ID
+app.get("/netzplaene/:id", (req, res) => {
+  const netzplanId = parseInt(req.params.id);
+  db.get("SELECT * FROM netzplaene WHERE id = ?", [netzplanId], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: "Netzplan not found" });
+    res.json(row);
+  });
+});
+
 app.post("/netzplaene", (req, res) => {
   const { name, description } = req.body;
   db.run(

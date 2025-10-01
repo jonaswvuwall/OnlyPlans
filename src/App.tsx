@@ -47,7 +47,7 @@ function AnimatedRoutes() {
             <CreatePlan />
           </PageTransition>
         } />
-        <Route path="/visualization" element={
+        <Route path="/visualization/:planId" element={
           <PageTransition>
             <Visualization />
           </PageTransition>
