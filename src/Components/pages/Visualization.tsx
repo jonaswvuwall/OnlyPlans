@@ -1,8 +1,12 @@
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { FC } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { saveAs } from 'file-saver';
+import { Download } from 'lucide-react';
 
 // Define the structure for an activity from createPlan
 interface PlanActivity {
@@ -41,9 +45,12 @@ interface NetworkPlanData {
 const Visualization: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const visualizationRef = useRef<HTMLDivElement>(null);
   const [networkActivities, setNetworkActivities] = useState<NetworkActivity[]>([]);
   const [planData, setPlanData] = useState<NetworkPlanData | null>(null);
   const [nodePositions, setNodePositions] = useState<Map<string, NodePosition>>(new Map());
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [dragState, setDragState] = useState<{
     isDragging: boolean;
     draggedNodeId: string | null;
@@ -74,6 +81,20 @@ const Visualization: FC = () => {
       setNodePositions(positions);
     }
   }, [location.state]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showExportMenu && !(event.target as Element)?.closest('.relative')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showExportMenu]);
 
   // Drag event handlers
   const handleMouseDown = (event: React.MouseEvent, nodeId: string) => {
@@ -129,6 +150,78 @@ const Visualization: FC = () => {
       startPos: { x: 0, y: 0 },
       startMousePos: { x: 0, y: 0 }
     });
+  };
+
+  // Export functions
+  const handleExport = async (format: 'png' | 'jpg' | 'pdf') => {
+    if (!visualizationRef.current || !planData) return;
+    
+    setIsExporting(true);
+    setShowExportMenu(false);
+    
+    try {
+      const canvas = await html2canvas(visualizationRef.current, {
+        backgroundColor: '#1e1b4b',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        height: visualizationRef.current.scrollHeight,
+        width: visualizationRef.current.scrollWidth
+      });
+      
+      switch (format) {
+        case 'png': {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              saveAs(blob, `${planData.planName}_network_plan.png`);
+            }
+          });
+          break;
+        }
+          
+        case 'jpg': {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              saveAs(blob, `${planData.planName}_network_plan.jpg`);
+            }
+          }, 'image/jpeg', 0.95);
+          break;
+        }
+          
+        case 'pdf': {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+          
+          const imgWidth = pdf.internal.pageSize.getWidth();
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          // If the content is too tall, scale it down to fit on one page
+          if (imgHeight > pdf.internal.pageSize.getHeight()) {
+            const scale = pdf.internal.pageSize.getHeight() / imgHeight;
+            const scaledWidth = imgWidth * scale;
+            const scaledHeight = imgHeight * scale;
+            const x = (pdf.internal.pageSize.getWidth() - scaledWidth) / 2;
+            const y = (pdf.internal.pageSize.getHeight() - scaledHeight) / 2;
+            pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+          } else {
+            const y = (pdf.internal.pageSize.getHeight() - imgHeight) / 2;
+            pdf.addImage(imgData, 'PNG', 0, y, imgWidth, imgHeight);
+          }
+          
+          pdf.save(`${planData.planName}_network_plan.pdf`);
+          break;
+        }
+      }
+    } catch (error) {
+      console.error(`Error exporting as ${format.toUpperCase()}:`, error);
+      alert(`Failed to export as ${format.toUpperCase()}. Please try again.`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Get node position (either from state or default grid position)
@@ -644,6 +737,9 @@ const Visualization: FC = () => {
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
             {planData ? `Project: ${planData.planName}` : 'Business network plan with critical path and buffer analysis'}
           </p>
+                
+          {/* Visualization Container with ref */}
+          <div ref={visualizationRef} className="visualization-container">
 
           {/* Project Statistics */}
           {networkActivities.length > 0 && (
@@ -675,6 +771,59 @@ const Visualization: FC = () => {
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
             {networkActivities.length > 0 ? (
               <>
+                {/* Export Button */}
+                <div className="flex justify-center mb-6">
+                  <div className="relative">
+                    <Button
+                      onClick={() => setShowExportMenu(!showExportMenu)}
+                      disabled={isExporting}
+                      className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                    >
+                      <Download size={18} />
+                      {isExporting ? 'Exporting...' : 'Export Plan'}
+                      {!isExporting && (
+                        <span className="ml-1 text-sm">▼</span>
+                      )}
+                    </Button>
+                    
+                    {/* Export Options Dropdown */}
+                    {showExportMenu && !isExporting && (
+                      <div className="absolute top-full left-0 mt-2 w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-50 shadow-xl">
+                        <button
+                          onClick={() => handleExport('png')}
+                          className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors border-b border-white/10 flex items-center gap-3"
+                        >
+                          <span className="text-lg">📸</span>
+                          <div>
+                            <div className="font-medium">PNG Image</div>
+                            <div className="text-xs text-white/60">High quality with transparency</div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => handleExport('jpg')}
+                          className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors border-b border-white/10 flex items-center gap-3"
+                        >
+                          <span className="text-lg">🖼️</span>
+                          <div>
+                            <div className="font-medium">JPG Image</div>
+                            <div className="text-xs text-white/60">Compressed format</div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => handleExport('pdf')}
+                          className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors flex items-center gap-3"
+                        >
+                          <span className="text-lg">📄</span>
+                          <div>
+                            <div className="font-medium">PDF Document</div>
+                            <div className="text-xs text-white/60">Professional document format</div>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Legend */}
                 <div className="flex justify-center gap-8 mb-6 text-sm">
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
@@ -688,21 +837,6 @@ const Visualization: FC = () => {
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                     <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-green-700 rounded shadow-lg"></div>
                     <span className="text-white font-medium">Buffer {'>'}0</span>
-                  </div>
-                </div>
-
-                {/* Debug information */}
-                <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
-                  <p className="text-yellow-200 text-sm">
-                    🔍 <strong>Debug Info:</strong> Found {networkActivities.length} activities. 
-                    Total connections: {networkActivities.reduce((total, activity) => total + activity.predecessors.length, 0)}
-                  </p>
-                  <div className="mt-2 text-xs text-yellow-100">
-                    {networkActivities.map(activity => (
-                      <div key={activity.id}>
-                        Activity {activity.referenceNumber}: predecessors = [{activity.predecessors.join(', ')}]
-                      </div>
-                    ))}
                   </div>
                 </div>
 
@@ -907,6 +1041,8 @@ const Visualization: FC = () => {
               </div>
             )}
           </div>
+          
+          </div> {/* End of visualization container */}
           
           {/* Back Button */}
           <div className="flex justify-center mt-8">
