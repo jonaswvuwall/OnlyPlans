@@ -24,7 +24,7 @@ const Operation: FC = () => {
           </p>
           
           {/* Action Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
+          <div className="grid md:grid-cols-2 gap-6 mt-16 max-w-4xl mx-auto">
             {/* Create Project Card */}
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 hover:bg-white/15 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex flex-col h-full card-hover">
               <div className="text-4xl mb-4">🚀</div>
@@ -38,29 +38,16 @@ const Operation: FC = () => {
               </Button>
             </div>
             
-            {/* Manage Teams Card */}
+            {/* Edit Plans Card */}
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 hover:bg-white/15 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex flex-col h-full card-hover">
-              <div className="text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold text-white mb-3">{t('operation.cards.managePlans.title')}</h3>
-              <p className="text-white/70 mb-6 flex-grow">{t('operation.cards.managePlans.description')}</p>
+              <div className="text-4xl mb-4">✏️</div>
+              <h3 className="text-xl font-semibold text-white mb-3">{t('operation.cards.editPlans.title')}</h3>
+              <p className="text-white/70 mb-6 flex-grow">{t('operation.cards.editPlans.description')}</p>
               <Button 
                 className="w-full mt-auto transition-all duration-300 hover:scale-105 active:scale-95"
-                onClick={() => navigate('/manage-plans')}
+                onClick={() => navigate('/edit-plans')}
               >
-                {t('operation.cards.managePlans.button')}
-              </Button>
-            </div>
-            
-            {/* Analytics Card */}
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 hover:bg-white/15 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 md:col-span-2 lg:col-span-1 flex flex-col h-full card-hover">
-              <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold text-white mb-3">{t('operation.cards.downloadPlans.title')}</h3>
-              <p className="text-white/70 mb-6 flex-grow">{t('operation.cards.downloadPlans.description')}</p>
-              <Button 
-                className="w-full mt-auto transition-all duration-300 hover:scale-105 active:scale-95"
-                onClick={() => navigate('/manage-plans')}
-              >
-                {t('operation.cards.downloadPlans.button')}
+                {t('operation.cards.editPlans.button')}
               </Button>
             </div>
           </div>

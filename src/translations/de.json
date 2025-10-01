@@ -23,7 +23,6 @@
     "closeMenu": "Menü schließen",
     "goToLandingPage": "Zur Startseite",
     "createPlan": "Plan Erstellen",
-    "managePlans": "Pläne Verwalten",
     "operations": "Operationen",
     "visualization": "Visualisierung",
     "switchToGerman": "Zu Deutsch wechseln",
@@ -59,9 +58,9 @@
     "planActivities": "Planaktivitäten",
     "addActivity": "Aktivität Hinzufügen",
     "referenceNumber": "Referenznummer",
-    "activityName": "Aktivitätsname",
+    "activityName": "Aktivitätsname *",
     "activityNamePlaceholder": "Aktivitätsname eingeben...",
-    "duration": "Dauer",
+    "duration": "Dauer *",
     "durationPlaceholder": "Dauer...",
     "predecessors": "Vorgänger (kommagetrennt)",
     "predecessorsPlaceholder": "z.B. 1,2,3...",
@@ -167,11 +166,27 @@
       "pdfFailed": "Export als PDF fehlgeschlagen. Bitte versuchen Sie es erneut."
     }
   },
-  "managePlans": {
-    "title": "Pläne Verwalten",
-    "subtitle": "Betrachten und organisieren Sie alle Ihre Projektpläne.",
-    "noPLans": "Keine Pläne verfügbar",
-    "createFirst": "Erstellen Sie Ihren ersten Plan, um zu beginnen"
+  "editPlans": {
+    "title": "Pläne Bearbeiten",
+    "subtitle": "Wählen und bearbeiten Sie Ihre bestehenden Projektpläne.",
+    "selectPlan": "Plan zum Bearbeiten Auswählen",
+    "createNewPlan": "Neuen Plan Erstellen",
+    "noPlans": {
+      "title": "Keine Pläne zum Bearbeiten",
+      "description": "Sie haben noch keine Pläne. Erstellen Sie Ihren ersten Plan, um zu beginnen.",
+      "createButton": "Ersten Plan Erstellen"
+    },
+    "planInfo": {
+      "created": "Erstellt",
+      "activities": "Aktivitäten"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "view": "Anzeigen",
+      "delete": "Löschen"
+    },
+    "deleteConfirmation": "Sind Sie sicher, dass Sie den Plan '{planName}' löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteSuccess": "Plan erfolgreich gelöscht!"
   },
   "operation": {
     "title": "Operationen",
@@ -182,15 +197,10 @@
         "description": "Starten Sie ein neues Netzplanungsprojekt mit Aktivitäten und Abhängigkeiten.",
         "button": "Plan Erstellen"
       },
-      "managePlans": {
-        "title": "Pläne Verwalten",
-        "description": "Betrachten, bearbeiten und organisieren Sie alle Ihre bestehenden Projektpläne.",
-        "button": "Pläne Verwalten"
-      },
-      "downloadPlans": {
-        "title": "Analyse & Berichte",
-        "description": "Projektanalysen anzeigen und umfassende Berichte herunterladen.",
-        "button": "Analysen Anzeigen"
+      "editPlans": {
+        "title": "Pläne Bearbeiten",
+        "description": "Bearbeiten und modifizieren Sie Ihre bestehenden Projektpläne und Aktivitäten.",
+        "button": "Pläne Bearbeiten"
       }
     }
   },

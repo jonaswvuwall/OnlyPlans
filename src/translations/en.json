@@ -23,7 +23,6 @@
     "closeMenu": "Close menu",
     "goToLandingPage": "Go to Landing Page",
     "createPlan": "Create Plan",
-    "managePlans": "Manage Plans",
     "operations": "Operations",
     "visualization": "Visualization",
     "switchToGerman": "Switch to German",
@@ -59,9 +58,9 @@
     "planActivities": "Plan Activities",
     "addActivity": "Add Activity",
     "referenceNumber": "Reference Number",
-    "activityName": "Activity Name",
+    "activityName": "Activity Name *",
     "activityNamePlaceholder": "Enter activity name...",
-    "duration": "Duration",
+    "duration": "Duration *",
     "durationPlaceholder": "Duration...",
     "predecessors": "Predecessors (comma-separated)",
     "predecessorsPlaceholder": "e.g. 1,2,3...",
@@ -150,11 +149,27 @@
       "pdfFailed": "Failed to export as PDF. Please try again."
     }
   },
-  "managePlans": {
-    "title": "Manage Plans",
-    "subtitle": "View and organize all your project plans.",
-    "noPLans": "No plans available",
-    "createFirst": "Create your first plan to get started"
+  "editPlans": {
+    "title": "Edit Plans",
+    "subtitle": "Select and edit your existing project plans.",
+    "selectPlan": "Select a Plan to Edit",
+    "createNewPlan": "Create New Plan",
+    "noPlans": {
+      "title": "No Plans to Edit",
+      "description": "You don't have any plans yet. Create your first plan to get started.",
+      "createButton": "Create Your First Plan"
+    },
+    "planInfo": {
+      "created": "Created",
+      "activities": "Activities"
+    },
+    "actions": {
+      "edit": "Edit",
+      "view": "View",
+      "delete": "Delete"
+    },
+    "deleteConfirmation": "Are you sure you want to delete the plan '{planName}'? This action cannot be undone.",
+    "deleteSuccess": "Plan deleted successfully!"
   },
   "operation": {
     "title": "Operations",
@@ -165,15 +180,10 @@
         "description": "Start a new network planning project with activities and dependencies.",
         "button": "Create Plan"
       },
-      "managePlans": {
-        "title": "Manage Plans",
-        "description": "View, edit, and organize all your existing project plans.",
-        "button": "Manage Plans"
-      },
-      "downloadPlans": {
-        "title": "Analytics & Reports",
-        "description": "View project analytics and download comprehensive reports.",
-        "button": "View Analytics"
+      "editPlans": {
+        "title": "Edit Plans",
+        "description": "Edit and modify your existing project plans and activities.",
+        "button": "Edit Plans"
       }
     }
   },
