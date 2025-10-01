@@ -7,6 +7,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Download } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Define the structure for an activity from createPlan
 interface PlanActivity {
@@ -45,6 +46,7 @@ interface NetworkPlanData {
 const Visualization: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const visualizationRef = useRef<HTMLDivElement>(null);
   const [networkActivities, setNetworkActivities] = useState<NetworkActivity[]>([]);
   const [planData, setPlanData] = useState<NetworkPlanData | null>(null);
@@ -218,7 +220,8 @@ const Visualization: FC = () => {
       }
     } catch (error) {
       console.error(`Error exporting as ${format.toUpperCase()}:`, error);
-      alert(`Failed to export as ${format.toUpperCase()}. Please try again.`);
+      const errorKey = `visualization.exportErrors.${format}Failed`;
+      alert(t(errorKey));
     } finally {
       setIsExporting(false);
     }
@@ -730,12 +733,12 @@ const Visualization: FC = () => {
         <div className="text-center space-y-8 w-full max-w-none">
           {/* Title */}
           <h1 className="text-5xl font-bold text-white mb-6">
-            Network Plan Analysis
+            {t('visualization.title')}
           </h1>
           
           {/* Subtitle */}
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
-            {planData ? `Project: ${planData.planName}` : 'Business network plan with critical path and buffer analysis'}
+            {planData ? `${t('visualization.project')}: ${planData.planName}` : t('visualization.subtitle')}
           </p>
                 
           {/* Visualization Container with ref */}
@@ -747,21 +750,21 @@ const Visualization: FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div className="bg-white/10 rounded-lg p-4 border border-white/10">
                   <div className="text-4xl mb-2">⏱️</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Project Duration</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{t('visualization.statistics.projectDuration')}</h3>
                   <p className="text-3xl font-bold text-green-400">{projectDuration}</p>
-                  <p className="text-sm text-green-200">Days</p>
+                  <p className="text-sm text-green-200">{t('visualization.statistics.days')}</p>
                 </div>
                 <div className="bg-white/10 rounded-lg p-4 border border-white/10">
                   <div className="text-4xl mb-2">🎯</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Critical Path</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{t('visualization.statistics.criticalPath')}</h3>
                   <p className="text-3xl font-bold text-red-400">{criticalPath.length}</p>
-                  <p className="text-sm text-red-200">Critical Activities</p>
+                  <p className="text-sm text-red-200">{t('visualization.statistics.criticalActivities')}</p>
                 </div>
                 <div className="bg-white/10 rounded-lg p-4 border border-white/10">
                   <div className="text-4xl mb-2">📋</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Total Activities</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{t('visualization.statistics.totalActivities')}</h3>
                   <p className="text-3xl font-bold text-blue-400">{networkActivities.length}</p>
-                  <p className="text-sm text-blue-200">Activities</p>
+                  <p className="text-sm text-blue-200">{t('visualization.statistics.activities')}</p>
                 </div>
               </div>
             </div>
@@ -780,7 +783,7 @@ const Visualization: FC = () => {
                       className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
                     >
                       <Download size={18} />
-                      {isExporting ? 'Exporting...' : 'Export Plan'}
+                      {isExporting ? t('visualization.exporting') : t('visualization.exportPlan')}
                       {!isExporting && (
                         <span className="ml-1 text-sm">▼</span>
                       )}
@@ -795,8 +798,8 @@ const Visualization: FC = () => {
                         >
                           <span className="text-lg">📸</span>
                           <div>
-                            <div className="font-medium">PNG Image</div>
-                            <div className="text-xs text-white/60">High quality with transparency</div>
+                            <div className="font-medium">{t('visualization.exportOptions.png.title')}</div>
+                            <div className="text-xs text-white/60">{t('visualization.exportOptions.png.description')}</div>
                           </div>
                         </button>
                         <button
@@ -805,8 +808,8 @@ const Visualization: FC = () => {
                         >
                           <span className="text-lg">🖼️</span>
                           <div>
-                            <div className="font-medium">JPG Image</div>
-                            <div className="text-xs text-white/60">Compressed format</div>
+                            <div className="font-medium">{t('visualization.exportOptions.jpg.title')}</div>
+                            <div className="text-xs text-white/60">{t('visualization.exportOptions.jpg.description')}</div>
                           </div>
                         </button>
                         <button
@@ -815,8 +818,8 @@ const Visualization: FC = () => {
                         >
                           <span className="text-lg">📄</span>
                           <div>
-                            <div className="font-medium">PDF Document</div>
-                            <div className="text-xs text-white/60">Professional document format</div>
+                            <div className="font-medium">{t('visualization.exportOptions.pdf.title')}</div>
+                            <div className="text-xs text-white/60">{t('visualization.exportOptions.pdf.description')}</div>
                           </div>
                         </button>
                       </div>
@@ -828,15 +831,15 @@ const Visualization: FC = () => {
                 <div className="flex justify-center gap-8 mb-6 text-sm">
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                     <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded shadow-lg"></div>
-                    <span className="text-white font-medium">Critical Path</span>
+                    <span className="text-white font-medium">{t('visualization.legend.criticalPath')}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                     <div className="w-4 h-4 bg-gradient-to-br from-purple-500 to-purple-700 rounded shadow-lg"></div>
-                    <span className="text-white font-medium">Normal Activity</span>
+                    <span className="text-white font-medium">{t('visualization.legend.normalActivity')}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                     <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-green-700 rounded shadow-lg"></div>
-                    <span className="text-white font-medium">Buffer {'>'}0</span>
+                    <span className="text-white font-medium">{t('visualization.legend.bufferGreaterZero')}</span>
                   </div>
                 </div>
 
@@ -893,33 +896,33 @@ const Visualization: FC = () => {
 
                 {/* Activity Details Table */}
                 <div className="mt-8">
-                  <h3 className="text-xl font-semibold text-white mb-4">Detailed Network Plan Analysis</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">{t('visualization.table.title')}</h3>
                   <div className="overflow-x-auto bg-white/5 rounded-xl border border-white/10">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-white/20 bg-purple-600/20">
-                          <th className="text-left text-white p-4 font-semibold">No.</th>
-                          <th className="text-left text-white p-4 font-semibold">Activity</th>
-                          <th className="text-left text-white p-4 font-semibold">Duration</th>
-                          <th className="text-left text-white p-4 font-semibold">ES</th>
-                          <th className="text-left text-white p-4 font-semibold">EF</th>
-                          <th className="text-left text-white p-4 font-semibold">LS</th>
-                          <th className="text-left text-white p-4 font-semibold">LF</th>
-                          <th className="text-left text-white p-4 font-semibold">TF</th>
-                          <th className="text-left text-white p-4 font-semibold">FF</th>
-                          <th className="text-left text-white p-4 font-semibold">Critical</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.no')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.activity')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.duration')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.es')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.ef')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.ls')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.lf')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.tf')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.ff')}</th>
+                          <th className="text-left text-white p-4 font-semibold">{t('visualization.table.headers.critical')}</th>
                         </tr>
                         <tr className="border-b border-white/10 bg-white/5 text-xs">
                           <th className="text-left text-white/70 p-2 font-normal"></th>
-                          <th className="text-left text-white/70 p-2 font-normal">Name</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Days</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Earliest Start</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Earliest Finish</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Latest Start</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Latest Finish</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Total Float</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Free Float</th>
-                          <th className="text-left text-white/70 p-2 font-normal">Crit. Path</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.name')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.days')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.earliestStart')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.earliestFinish')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.latestStart')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.latestFinish')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.totalFloat')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.freeFloat')}</th>
+                          <th className="text-left text-white/70 p-2 font-normal">{t('visualization.table.descriptions.critPath')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -980,19 +983,19 @@ const Visualization: FC = () => {
                   
                   {/* Terms explanation */}
                   <div className="mt-6 bg-white/5 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-lg font-semibold text-white mb-3">📚 Term Definitions:</h4>
+                    <h4 className="text-lg font-semibold text-white mb-3">📚 {t('visualization.terms.title')}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/80">
                       <div>
-                        <strong className="text-white">EAS/EAF:</strong> Earliest Activity Start/Finish - The earliest possible start and finish time of an activity.
+                        <strong className="text-white">{t('visualization.terms.easEaf.title')}</strong> {t('visualization.terms.easEaf.description')}
                       </div>
                       <div>
-                        <strong className="text-white">LAS/LAF:</strong> Latest Activity Start/Finish - The latest possible start and finish time of an activity.
+                        <strong className="text-white">{t('visualization.terms.lasLaf.title')}</strong> {t('visualization.terms.lasLaf.description')}
                       </div>
                       <div>
-                        <strong className="text-white">Total Float (TF):</strong> The time span by which an activity can be delayed without endangering the project.
+                        <strong className="text-white">{t('visualization.terms.totalFloat.title')}</strong> {t('visualization.terms.totalFloat.description')}
                       </div>
                       <div>
-                        <strong className="text-white">Critical Path:</strong> The path in the network plan consisting of activities without buffer time (TF = 0).
+                        <strong className="text-white">{t('visualization.terms.criticalPath.title')}</strong> {t('visualization.terms.criticalPath.description')}
                       </div>
                     </div>
                   </div>
@@ -1003,7 +1006,7 @@ const Visualization: FC = () => {
                   <div className="mt-6 bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="text-2xl">🔥</div>
-                      <h4 className="text-xl font-semibold text-white">Critical Path</h4>
+                      <h4 className="text-xl font-semibold text-white">{t('visualization.criticalPathDetails.title')}</h4>
                     </div>
                     <div className="bg-white/10 rounded-lg p-4 border border-white/10">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1019,7 +1022,7 @@ const Visualization: FC = () => {
                         ))}
                       </div>
                       <div className="mt-4 text-sm text-red-200">
-                        <strong>Important:</strong> Delays in these activities will extend the entire project!
+                        <strong>{t('visualization.criticalPathDetails.importantLabel')}</strong> {t('visualization.criticalPathDetails.importantText')}
                       </div>
                     </div>
                   </div>
@@ -1028,15 +1031,15 @@ const Visualization: FC = () => {
             ) : (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📊</div>
-                <h3 className="text-xl font-semibold text-white mb-2">No Data Available</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">{t('visualization.noData.title')}</h3>
                 <p className="text-white/60 mb-6">
-                  Please create a plan with activities first.
+                  {t('visualization.noData.description')}
                 </p>
                 <Button 
                   onClick={() => navigate('/create-plan')}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
-                  Create Plan
+                  {t('visualization.noData.createButton')}
                 </Button>
               </div>
             )}
@@ -1051,7 +1054,7 @@ const Visualization: FC = () => {
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105"
             >
-              ← Back to Plan Creation
+              ← {t('visualization.backButton')}
             </Button>
           </div>
         </div>

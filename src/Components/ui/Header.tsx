@@ -1,9 +1,11 @@
 import CardNav from './CardNav';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from '../../hooks/useTranslation';
 import type { FC } from 'react';
 
 const Header: FC = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   
   // Determine if we should show the Get Started button (only on landing page)
   const showGetStartedButton = location.pathname === '/' || location.pathname === '/home';
@@ -11,30 +13,30 @@ const Header: FC = () => {
   // CardNav data
   const navItems = [
     {
-      label: 'Products',
+      label: t('header.products'),
       bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: 'Planning Tools', href: '/operation', ariaLabel: 'Go to Planning Tools' },
-        { label: 'Planned Features', href: 'https://rickrolllol.yourwebsitespace.com/', ariaLabel: 'Go to Planned Features' }
+        { label: t('header.planningTools'), href: '/operation', ariaLabel: t('header.planningToolsAria') },
+        { label: t('header.plannedFeatures'), href: 'https://rickrolllol.yourwebsitespace.com/', ariaLabel: t('header.plannedFeaturesAria') }
       ]
     },
     {
-      label: 'Resources',
+      label: t('header.resources'),
       bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: 'Documentation', href: 'https://github.com/jonaswvuwall/OnlyPlans/wiki', ariaLabel: 'Go to Documentation' },
-        { label: 'Support', href: '/https://www.support.com/', ariaLabel: 'Go to Support' }
+        { label: t('header.documentation'), href: 'https://github.com/jonaswvuwall/OnlyPlans/wiki', ariaLabel: t('header.documentationAria') },
+        { label: t('header.support'), href: '/https://www.support.com/', ariaLabel: t('header.supportAria') }
       ]
     },
     {
-      label: 'Company',
+      label: t('header.company'),
       bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: 'Jonas Wintrich', href: 'https://www.linkedin.com/in/jonas-wintrich-a31bb61ba/', ariaLabel: 'Go to Jonas Wintrich LinkedIn' },
-        { label: 'Benjamin Klein', href: 'https://www.linkedin.com/in/benjamin-klein-549906336/', ariaLabel: 'Go to Benjamin Klein LinkedIn' }
+        { label: 'Jonas Wintrich', href: 'https://www.linkedin.com/in/jonas-wintrich-a31bb61ba/', ariaLabel: t('header.jonasLinkedInAria') },
+        { label: 'Benjamin Klein', href: 'https://www.linkedin.com/in/benjamin-klein-549906336/', ariaLabel: t('header.benjaminLinkedInAria') }
       ]
     }
   ];
@@ -44,22 +46,22 @@ const Header: FC = () => {
     ? [
         ...navItems,
         {
-          label: 'Get Started',
+          label: t('header.getStarted'),
           bgColor: '#8B5CF6',
           textColor: '#ffffff',
           links: [
-            { label: 'Start Planning', href: '/operation', ariaLabel: 'Go to Planning Tools' }
+            { label: t('header.startPlanning'), href: '/operation', ariaLabel: t('header.startPlanningAria') }
           ]
         }
       ]
     : navItems;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-black/20 backdrop-blur-sm border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full">
       <div className="w-full pt-4 pb-4 px-4">
         <CardNav
           logo="/Logo_small-Photoroom.png"
-          logoAlt="OnlyPlans Logo"
+          logoAlt={t('header.logoAlt')}
           items={navItemsWithGetStarted}
           baseColor="#D3D3D3"
           menuColor="#333333"

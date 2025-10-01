@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { TranslationProvider } from './contexts/TranslationContext'
 import BackgroundWrapper from './Components/ui/background'
 import Header from './Components/ui/Header'
 import PageTransition from './Components/ui/PageTransition'
@@ -53,12 +54,14 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <Router>
-      <BackgroundWrapper>
-        <Header />
-        <AnimatedRoutes />
-      </BackgroundWrapper>
-    </Router>
+    <TranslationProvider defaultLanguage="en">
+      <Router>
+        <BackgroundWrapper>
+          <Header />
+          <AnimatedRoutes />
+        </BackgroundWrapper>
+      </Router>
+    </TranslationProvider>
   )
 }
 

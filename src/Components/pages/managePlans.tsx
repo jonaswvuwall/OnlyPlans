@@ -1,6 +1,7 @@
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../hooks/useTranslation';
 import type { FC } from 'react';
 
 // Define the structure for a plan
@@ -15,6 +16,7 @@ interface Plan {
 
 const ManagePlans: FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Empty plans list - will be populated later
   const plans: Plan[] = [];
@@ -26,24 +28,24 @@ const ManagePlans: FC = () => {
         <div className="text-center space-y-8 w-full">
           {/* Title */}
           <h1 className="text-5xl font-bold text-white mb-6">
-            Manage Your Plans
+            {t('managePlans.title')}
           </h1>
           
           {/* Subtitle */}
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
-            View, edit, and organize all your plans in one place.
+            {t('managePlans.subtitle')}
           </p>
           
           {/* Plans List Container */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
             {/* Header with Create Button */}
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-semibold text-white">Your Plans</h2>
+              <h2 className="text-2xl font-semibold text-white">{t('managePlans.yourPlans')}</h2>
               <Button 
                 className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 active:scale-95"
                 onClick={() => navigate('/create-plan')}
               >
-                + Create New Plan
+                + {t('managePlans.createNewPlan')}
               </Button>
             </div>
             
@@ -52,15 +54,15 @@ const ManagePlans: FC = () => {
               // Empty State
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">📋</div>
-                <h3 className="text-xl font-semibold text-white mb-3">No Plans Yet</h3>
+                <h3 className="text-xl font-semibold text-white mb-3">{t('managePlans.noPlans.title')}</h3>
                 <p className="text-white/70 mb-6 max-w-md mx-auto">
-                  You haven't created any plans yet. Click "Create New Plan" to get started with your first project plan.
+                  {t('managePlans.noPlans.description')}
                 </p>
                 <Button 
                   className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 active:scale-95"
                   onClick={() => navigate('/create-plan')}
                 >
-                  Create Your First Plan
+                  {t('managePlans.noPlans.createButton')}
                 </Button>
               </div>
             ) : (
@@ -73,9 +75,9 @@ const ManagePlans: FC = () => {
                         <h3 className="text-lg font-semibold text-white mb-2">{plan.name}</h3>
                         <p className="text-white/70 mb-3">{plan.description}</p>
                         <div className="flex gap-4 text-sm text-white/60">
-                          <span>Created: {plan.createdDate}</span>
-                          <span>Activities: {plan.activityCount}</span>
-                          <span>Status: {plan.status}</span>
+                          <span>{t('managePlans.planInfo.created')}: {plan.createdDate}</span>
+                          <span>{t('managePlans.planInfo.activities')}: {plan.activityCount}</span>
+                          <span>{t('managePlans.planInfo.status')}: {plan.status}</span>
                         </div>
                       </div>
                       <div className="flex gap-2 ml-4">
@@ -84,13 +86,13 @@ const ManagePlans: FC = () => {
                           variant="outline"
                           className="border-white/20 text-white hover:bg-white/10"
                         >
-                          Edit
+                          {t('managePlans.actions.edit')}
                         </Button>
                         <Button 
                           size="sm" 
                           className="bg-purple-600 hover:bg-purple-700"
                         >
-                          View
+                          {t('managePlans.actions.view')}
                         </Button>
                       </div>
                     </div>

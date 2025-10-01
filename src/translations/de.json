@@ -1,0 +1,219 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "home": "Startseite",
+    "getStarted": "Loslegen",
+    "days": "Tage",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "navigation": {
+    "logo": "OnlyPlans Logo",
+    "menu": "Menü",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "goToLandingPage": "Zur Startseite",
+    "createPlan": "Plan Erstellen",
+    "managePlans": "Pläne Verwalten",
+    "operations": "Operationen",
+    "visualization": "Visualisierung",
+    "switchToGerman": "Zu Deutsch wechseln",
+    "switchToEnglish": "Zu Englisch wechseln",
+    "languageSwitcherAria": "Klicken um Sprache zu wechseln"
+  },
+  "landing": {
+    "title": "Willkommen bei OnlyPlans",
+    "subtitle": "Ihre Projektmanagement-Lösung",
+    "description": "Planen, visualisieren und verwalten Sie Ihre Projekte mit unseren leistungsstarken Netzplantools.",
+    "features": {
+      "planning": {
+        "title": "Intelligente Planung",
+        "description": "Erstellen Sie detaillierte Projektpläne mit unserer intuitiven Benutzeroberfläche"
+      },
+      "visualization": {
+        "title": "Visuelle Netzwerke",
+        "description": "Sehen Sie Ihren Projektzeitplan mit schönen Netzwerkdiagrammen"
+      },
+      "management": {
+        "title": "Einfache Verwaltung",
+        "description": "Verfolgen Sie den Fortschritt und verwalten Sie Ressourcen mühelos"
+      }
+    }
+  },
+  "createPlan": {
+    "title": "Neuen Plan Erstellen",
+    "subtitle": "Erstellen Sie Ihren Projektplan Schritt für Schritt mit unserem interaktiven Tabelleneditor.",
+    "planName": "Planname",
+    "planNamePlaceholder": "Planname eingeben...",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Kurze Beschreibung Ihres Plans...",
+    "planActivities": "Planaktivitäten",
+    "addActivity": "Aktivität Hinzufügen",
+    "referenceNumber": "Referenznummer",
+    "activityName": "Aktivitätsname",
+    "activityNamePlaceholder": "Aktivitätsname eingeben...",
+    "duration": "Dauer",
+    "durationPlaceholder": "Dauer...",
+    "predecessors": "Vorgänger (kommagetrennt)",
+    "predecessorsPlaceholder": "z.B. 1,2,3...",
+    "actions": "Aktionen",
+    "tip": "Tipp:",
+    "tipText": "Geben Sie mehrere Vorgänger durch Kommas getrennt ein (z.B. \"1,2,3\"). Lassen Sie das Feld für Startaktivitäten ohne Abhängigkeiten leer.",
+    "visualizePlan": "Plan Visualisieren",
+    "savePlan": "Plan Speichern",
+    "planSaved": "Plan gespeichert! (Dies ist ein Platzhalter - die tatsächliche Speicherfunktion wird später implementiert)"
+  },
+  "visualization": {
+    "title": "Netzplan-Analyse",
+    "subtitle": "Betriebswirtschaftlicher Netzplan mit kritischem Pfad und Pufferanalyse",
+    "project": "Projekt",
+    "exportPlan": "Plan Exportieren",
+    "exporting": "Exportiere...",
+    "exportOptions": {
+      "png": {
+        "title": "PNG Bild",
+        "description": "Hohe Qualität mit Transparenz"
+      },
+      "jpg": {
+        "title": "JPG Bild",
+        "description": "Komprimiertes Format"
+      },
+      "pdf": {
+        "title": "PDF Dokument",
+        "description": "Professionelles Dokumentformat"
+      }
+    },
+    "statistics": {
+      "projectDuration": "Projektdauer",
+      "criticalPath": "Kritischer Pfad",
+      "criticalActivities": "Kritische Aktivitäten",
+      "totalActivities": "Gesamtaktivitäten",
+      "activities": "Aktivitäten"
+    },
+    "legend": {
+      "criticalPath": "Kritischer Pfad",
+      "normalActivity": "Normale Aktivität",
+      "bufferGreaterThanZero": "Puffer > 0"
+    },
+    "networkPlan": {
+      "es": "FAZ",
+      "ef": "FEZ",
+      "ls": "SAZ",
+      "lf": "SEZ",
+      "earliestStart": "Frühester Anfang",
+      "earliestFinish": "Frühestes Ende",
+      "latestStart": "Spätester Anfang",
+      "latestFinish": "Spätestes Ende",
+      "totalFloat": "Gesamtpuffer",
+      "freeFloat": "Freier Puffer",
+      "criticalPath": "Krit. Pfad"
+    },
+    "table": {
+      "title": "Detaillierte Netzplan-Analyse",
+      "headers": {
+        "no": "Nr.",
+        "activity": "Aktivität",
+        "duration": "Dauer",
+        "es": "FAZ",
+        "ef": "FEZ",
+        "ls": "SAZ",
+        "lf": "SEZ",
+        "tf": "GP",
+        "ff": "FP",
+        "critical": "Kritisch"
+      },
+      "descriptions": {
+        "name": "Name",
+        "days": "Tage",
+        "earliestStart": "Frühester Anfang",
+        "earliestFinish": "Frühestes Ende",
+        "latestStart": "Spätester Anfang",
+        "latestFinish": "Spätestes Ende",
+        "totalFloat": "Gesamtpuffer",
+        "freeFloat": "Freier Puffer",
+        "critPath": "Krit. Pfad"
+      }
+    },
+    "terms": {
+      "title": "Begriffsdefinitionen:",
+      "eas": "FAZ/FEZ: Frühester Aktivitätsbeginn/-ende - Der frühestmögliche Start- und Endzeitpunkt einer Aktivität.",
+      "las": "SAZ/SEZ: Spätester Aktivitätsbeginn/-ende - Der spätestmögliche Start- und Endzeitpunkt einer Aktivität.",
+      "totalFloat": "Gesamtpuffer (GP): Die Zeitspanne, um die eine Aktivität verzögert werden kann, ohne das Projekt zu gefährden.",
+      "criticalPath": "Kritischer Pfad: Der Pfad im Netzplan, der aus Aktivitäten ohne Pufferzeit besteht (GP = 0)."
+    },
+    "criticalPathDetails": {
+      "title": "Kritischer Pfad",
+      "important": "Wichtig:",
+      "warning": "Verzögerungen bei diesen Aktivitäten verlängern das gesamte Projekt!"
+    },
+    "noData": {
+      "title": "Keine Daten Verfügbar",
+      "message": "Bitte erstellen Sie zuerst einen Plan mit Aktivitäten.",
+      "createPlan": "Plan Erstellen"
+    },
+    "backToPlanCreation": "Zurück zur Plan-Erstellung",
+    "exportErrors": {
+      "pngFailed": "Export als PNG fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "jpgFailed": "Export als JPG fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "pdfFailed": "Export als PDF fehlgeschlagen. Bitte versuchen Sie es erneut."
+    }
+  },
+  "managePlans": {
+    "title": "Pläne Verwalten",
+    "subtitle": "Betrachten und organisieren Sie alle Ihre Projektpläne.",
+    "noPLans": "Keine Pläne verfügbar",
+    "createFirst": "Erstellen Sie Ihren ersten Plan, um zu beginnen"
+  },
+  "operation": {
+    "title": "Operationen",
+    "subtitle": "Überblick über Ihre Projektoperationen und Tools.",
+    "cards": {
+      "createPlan": {
+        "title": "Projektplan Erstellen",
+        "description": "Starten Sie ein neues Netzplanungsprojekt mit Aktivitäten und Abhängigkeiten.",
+        "button": "Plan Erstellen"
+      },
+      "managePlans": {
+        "title": "Pläne Verwalten",
+        "description": "Betrachten, bearbeiten und organisieren Sie alle Ihre bestehenden Projektpläne.",
+        "button": "Pläne Verwalten"
+      },
+      "downloadPlans": {
+        "title": "Analyse & Berichte",
+        "description": "Projektanalysen anzeigen und umfassende Berichte herunterladen.",
+        "button": "Analysen Anzeigen"
+      }
+    }
+  },
+  "footer": {
+    "craftedBy": "Mit Leidenschaft erstellt von"
+  },
+  "header": {
+    "products": "Produkte",
+    "planningTools": "Planungstools",
+    "plannedFeatures": "Geplante Features",
+    "resources": "Ressourcen",
+    "documentation": "Dokumentation",
+    "support": "Support",
+    "company": "Unternehmen",
+    "getStarted": "Loslegen",
+    "startPlanning": "Planung Starten",
+    "logoAlt": "OnlyPlans Logo",
+    "planningToolsAria": "Zu den Planungstools gehen",
+    "plannedFeaturesAria": "Zu den geplanten Features gehen",
+    "documentationAria": "Zur Dokumentation gehen",
+    "supportAria": "Zum Support gehen",
+    "jonasLinkedInAria": "Zum Jonas Wintrich LinkedIn gehen",
+    "benjaminLinkedInAria": "Zum Benjamin Klein LinkedIn gehen",
+    "startPlanningAria": "Zu den Planungstools gehen"
+  }
+}
