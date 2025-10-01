@@ -1,4 +1,4 @@
-import CardNav from '../ui/CardNav';
+import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
@@ -15,56 +15,14 @@ interface Plan {
 
 const ManagePlans: FC = () => {
   const navigate = useNavigate();
-  // CardNav data
-  const navItems = [
-    {
-      label: 'Products',
-      bgColor: '#8B5CF6',
-      textColor: '#ffffff',
-      links: [
-        { label: 'Planning Tools', href: '/operation', ariaLabel: 'Go to Planning Tools' },
-        { label: 'Planned Features', href: 'https://rickrolllol.yourwebsitespace.com/', ariaLabel: 'Go to Planned Features' }
-      ]
-    },
-    {
-      label: 'Resources',
-      bgColor: '#8B5CF6',
-      textColor: '#ffffff',
-      links: [
-        { label: 'Documentation', href: 'https://github.com/jonaswvuwall/OnlyPlans/wiki', ariaLabel: 'Go to Documentation' },
-        { label: 'Support', href: 'www.support.com/', ariaLabel: 'Go to Support' }
-      ]
-    },
-    {
-      label: 'Company',
-      bgColor: '#8B5CF6',
-      textColor: '#ffffff',
-      links: [
-        { label: 'Jonas Wintrich', href: 'https://www.linkedin.com/in/jonas-wintrich-a31bb61ba/', ariaLabel: 'Go to Jonas Wintrich LinkedIn' },
-        { label: 'Benjamin Klein', href: 'https://www.linkedin.com/in/benjamin-klein-549906336/', ariaLabel: 'Go to Benjamin Klein LinkedIn' }
-      ]
-    }
-  ];
 
   // Empty plans list - will be populated later
   const plans: Plan[] = [];
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center pt-8">
-      
-      {/* CardNav */}
-      <CardNav
-        logo="/Logo_small-Photoroom.png"
-        logoAlt="OnlyPlans Logo"
-        items={navItems}
-        baseColor="#D3D3D3"
-        menuColor="#333333"
-        buttonBgColor="#8B5CF6"
-        buttonTextColor="#ffffff"
-      />
-      
+    <Layout>
       {/* Manage Plans Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start max-w-6xl mx-auto px-6 pt-20">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-6xl mx-auto px-6 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full">
           {/* Title */}
           <h1 className="text-5xl font-bold text-white mb-6">
@@ -143,7 +101,7 @@ const ManagePlans: FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

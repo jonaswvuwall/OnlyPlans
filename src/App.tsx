@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import BackgroundWrapper from './Components/ui/background'
+import Header from './Components/ui/Header'
 import PageTransition from './Components/ui/PageTransition'
 import './App.css'
 import Landing from './Components/pages/landing'
 import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
 import ManagePlans from './Components/pages/managePlans'
+import Visualization from './Components/pages/Visualization'
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -39,6 +41,11 @@ function AnimatedRoutes() {
             <ManagePlans />
           </PageTransition>
         } />
+        <Route path="/visualization" element={
+          <PageTransition>
+            <Visualization />
+          </PageTransition>
+        } />
       </Routes>
     </AnimatePresence>
   );
@@ -48,6 +55,7 @@ function App() {
   return (
     <Router>
       <BackgroundWrapper>
+        <Header />
         <AnimatedRoutes />
       </BackgroundWrapper>
     </Router>
