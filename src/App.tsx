@@ -8,7 +8,7 @@ import './App.css'
 import Landing from './Components/pages/landing'
 import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
-import EditPlans from './Components/pages/editPlans'
+import EditPlans from './Components/pages/managePlans'
 import Visualization from './Components/pages/Visualization'
 
 function AnimatedRoutes() {
