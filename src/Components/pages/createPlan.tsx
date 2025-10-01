@@ -11,7 +11,7 @@ interface PlanActivity {
   referenceNumber: number;
   activityName: string;
   dauer: string;
-  vorgaengerid: string;
+  vorgaengerid: string[]; // <-- now an array for multiselect
 }
 
 const CreatePlan: FC = () => {
@@ -27,7 +27,7 @@ const CreatePlan: FC = () => {
       referenceNumber: 1,
       activityName: '',
       dauer: '',
-      vorgaengerid: ''
+      vorgaengerid: []
     }
   ]);
 
@@ -38,7 +38,7 @@ const CreatePlan: FC = () => {
       referenceNumber: newReferenceNumber,
       activityName: '',
       dauer: '',
-      vorgaengerid: ''
+      vorgaengerid: []
     };
     setActivities([...activities, newActivity]);
   };
@@ -53,7 +53,7 @@ const CreatePlan: FC = () => {
     setActivities(updatedActivities);
   };
 
-  const updateActivity = (id: string, field: keyof PlanActivity, value: string) => {
+  const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
     setActivities(activities.map(activity => 
       activity.id === id ? { ...activity, [field]: value } : activity
     ));
@@ -63,30 +63,23 @@ const CreatePlan: FC = () => {
     const plan = {
       name: planName,
       description: planDescription,
-      activities: activities,
+      activities,
       createdDate: new Date().toISOString().split('T')[0],
       status: 'Active'
     };
     console.log('Saving plan:', plan);
-    // TODO: Implement actual save functionality
     alert(t('createPlan.planSaved'));
-
+    navigate('/manage-plans');
   };
 
-  // Check if all required fields are filled
   const allActivitiesValid = activities.every(a => a.activityName.trim() !== '' && a.dauer.trim() !== '');
-  const canVisualize = planName.trim() !== '' && allActivitiesValid;
 
   return (
     <Layout>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-7xl mx-auto px-6 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full">
-          <h1 className="text-5xl font-bold text-white mb-6">
-            {t('createPlan.title')}
-          </h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
-            {t('createPlan.subtitle')}
-          </p>
+          <h1 className="text-5xl font-bold text-white mb-6">{t('createPlan.title')}</h1>
+          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">{t('createPlan.subtitle')}</p>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
             <div className="mb-8">
@@ -157,13 +150,23 @@ const CreatePlan: FC = () => {
                         />
                       </td>
                       <td className="p-3">
-                        <input
-                          type="text"
-                          value={activity.vorgaengerid}
-                          onChange={(e) => updateActivity(activity.id, 'vorgaengerid', e.target.value)}
-                          placeholder={t('createPlan.predecessorsPlaceholder')}
-                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                        />
+                        {/* Multiselect checkboxes for predecessors */}
+                        {activities.filter(a => a.id !== activity.id).map(a => (
+                          <label key={a.id} className="flex items-center gap-2 text-white mb-1">
+                            <input
+                              type="checkbox"
+                              checked={activity.vorgaengerid.includes(a.id)}
+                              onChange={() => {
+                                const current = activity.vorgaengerid;
+                                const updated = current.includes(a.id)
+                                  ? current.filter(id => id !== a.id)
+                                  : [...current, a.id];
+                                updateActivity(activity.id, 'vorgaengerid', updated);
+                              }}
+                            />
+                            {a.referenceNumber} - {a.activityName || 'Unnamed'}
+                          </label>
+                        ))}
                       </td>
                       <td className="p-3">
                         {activities.length > 1 && (
@@ -182,7 +185,7 @@ const CreatePlan: FC = () => {
                 </tbody>
               </table>
             </div>
-            {/* Help for predecessor input */}
+
             <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
               <p className="text-blue-200 text-sm">
                 💡 <strong>{t('createPlan.tip')}</strong> {t('createPlan.tipText')}
@@ -195,13 +198,6 @@ const CreatePlan: FC = () => {
                 className="border-white/20 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 {t('common.cancel')}
-              </Button>
-              <Button
-                onClick={() => navigate('/visualization', { state: { planName, planDescription, activities } })}
-                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!canVisualize}
-              >
-                {t('createPlan.visualizePlan')}
               </Button>
               <Button
                 onClick={savePlan}
