@@ -1,6 +1,7 @@
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
 // Define the structure for an activity (Vorgang)
@@ -13,6 +14,8 @@ interface PlanActivity {
 }
 
 const CreatePlan: FC = () => {
+  const navigate = useNavigate();
+  
   // Plan metadata state
   const [planName, setPlanName] = useState('');
   const [planDescription, setPlanDescription] = useState('');
@@ -132,7 +135,7 @@ const CreatePlan: FC = () => {
                     <th className="text-left text-white font-medium p-3 min-w-[150px]">Reference Number</th>
                     <th className="text-left text-white font-medium p-3 min-w-[200px]">Activity Name</th>
                     <th className="text-left text-white font-medium p-3 min-w-[120px]">Duration</th>
-                    <th className="text-left text-white font-medium p-3 min-w-[120px]">Predecessor Reference Number</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[180px]">Predecessors (comma-separated)</th>
                     <th className="text-left text-white font-medium p-3 w-[80px]">Actions</th>
                   </tr>
                 </thead>
@@ -167,7 +170,7 @@ const CreatePlan: FC = () => {
                           type="text"
                           value={activity.vorgaengerid}
                           onChange={(e) => updateActivity(activity.id, 'vorgaengerid', e.target.value)}
-                          placeholder="Predecessor Reference No."
+                          placeholder="e.g. 1,2,3 for multiple predecessors"
                           className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </td>
@@ -189,12 +192,33 @@ const CreatePlan: FC = () => {
               </table>
             </div>
 
+            {/* Help for predecessor input */}
+            <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+              <p className="text-blue-200 text-sm">
+                💡 <strong>Tip:</strong> Enter multiple predecessors separated by commas (e.g. "1,2,3"). 
+                Leave the field empty for starting activities without dependencies.
+              </p>
+            </div>
+
             <div className="mt-8 flex justify-end gap-4">
               <Button 
                 variant="outline" 
                 className="border-white/20 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 Cancel
+              </Button>
+              <Button 
+                onClick={() => navigate('/visualization', { 
+                  state: { 
+                    planName, 
+                    planDescription, 
+                    activities: activities.filter(a => a.activityName.trim() !== '') 
+                  } 
+                })}
+                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={!planName.trim() || activities.length === 0}
+              >
+                Visualize Plan
               </Button>
               <Button 
                 onClick={savePlan}
