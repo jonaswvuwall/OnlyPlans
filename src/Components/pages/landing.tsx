@@ -3,7 +3,7 @@ import type { FC } from 'react';
 
 const Landing: FC = () => {
   return (
-    <Layout showGetStartedButton={true}>
+    <Layout>
       {/* Hero Section */}
       <div className="flex-grow flex flex-col items-center justify-center px-4 py-16">
         
