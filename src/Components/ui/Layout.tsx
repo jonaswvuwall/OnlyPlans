@@ -1,10 +1,13 @@
 import type { FC, ReactNode } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout: FC<LayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center">
       {/* Main Content with top padding to account for fixed header */}
@@ -15,7 +18,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
       {/* Enhanced Creators Footer */}
       <div className="relative z-10 pb-8 px-4">
         <div className="text-center">
-          <p className="text-white/40 text-sm mb-4 font-light">Crafted with passion by</p>
+          <p className="text-white/40 text-sm mb-4 font-light">{t('footer.craftedBy')}</p>
           <div className="flex justify-center items-center gap-8 flex-wrap">
             <a 
               href="https://www.linkedin.com/in/jonas-wintrich-a31bb61ba/" 

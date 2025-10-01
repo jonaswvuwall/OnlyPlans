@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 // use your own icon import if react-icons is not available
 import { GoArrowUpRight } from 'react-icons/go';
+import { useTranslation } from '../../hooks/useTranslation';
+import { Globe } from 'lucide-react';
 
 type CardNavLink = {
   label: string;
@@ -42,6 +44,7 @@ const CardNav: React.FC<CardNavProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, language, setLanguage } = useTranslation();
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const navRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +53,7 @@ const CardNav: React.FC<CardNavProps> = ({
 
   // Dynamic button text and navigation based on current route
   const isOnLandingPage = location.pathname === '/' || location.pathname === '/home';
-  const buttonText = isOnLandingPage ? 'Get Started' : 'Home';
+  const buttonText = isOnLandingPage ? t('common.getStarted') : t('common.home');
   const targetRoute = isOnLandingPage ? '/operation' : '/operation';
 
   const handleGetStartedClick = () => {
@@ -59,6 +62,11 @@ const CardNav: React.FC<CardNavProps> = ({
 
   const handleLandingClick = () => {
     navigate('/home');
+  };
+
+  const toggleLanguage = () => {
+    const newLanguage = language === 'en' ? 'de' : 'en';
+    setLanguage(newLanguage);
   };
 
   const calculateHeight = () => {
@@ -182,11 +190,12 @@ const CardNav: React.FC<CardNavProps> = ({
         style={{ backgroundColor: baseColor }}
       >
         <div className="card-nav-top absolute inset-x-0 top-0 h-[60px] flex items-center justify-between p-2 pl-[1.1rem] z-[2]">
+          
           <div
             className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''} group h-full flex flex-col items-center justify-center cursor-pointer gap-[6px] order-2 md:order-none`}
             onClick={toggleMenu}
             role="button"
-            aria-label={isExpanded ? 'Close menu' : 'Open menu'}
+            aria-label={isExpanded ? t('navigation.closeMenu') : t('navigation.openMenu')}
             tabIndex={0}
             style={{ color: menuColor || '#000' }}
           >
@@ -203,32 +212,47 @@ const CardNav: React.FC<CardNavProps> = ({
           </div>
 
           <div className="logo-container flex items-center md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 order-1 md:order-none">
-            <img src={logo} alt={logoAlt} className="logo h-[28px]" />
+            <img src={logo} alt={logoAlt || t('navigation.logo')} className="logo h-[28px]" />
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
-            {!isOnLandingPage && (
+          <div className="flex items-center gap-2">
+            {/* Navigation Buttons - Hidden on mobile, shown on desktop */}
+            <div className="hidden md:flex items-center gap-2">
+              {!isOnLandingPage && (
+                <button
+                  type="button"
+                  className="card-nav-cta-button inline-flex items-center justify-center border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-[44px] font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                  onClick={handleLandingClick}
+                  title={t('navigation.goToLandingPage')}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                  </svg>
+                </button>
+              )}
+              
+              {/* Language Switcher Button - now positioned second */}
+              <button
+                onClick={toggleLanguage}
+                className="card-nav-cta-button inline-flex items-center justify-center border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-[44px] font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                title={language === 'en' ? t('navigation.switchToGerman') : t('navigation.switchToEnglish')}
+                aria-label={t('navigation.languageSwitcherAria')}
+              >
+                <Globe size={14} />
+                <span className="text-xs font-medium ml-1">{language.toUpperCase()}</span>
+              </button>
+              
               <button
                 type="button"
-                className="card-nav-cta-button inline-flex items-center justify-center border-0 rounded-[calc(0.75rem-0.2rem)] px-3 h-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+                className="card-nav-cta-button inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-[44px] font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-                onClick={handleLandingClick}
-                title="Go to Landing Page"
+                onClick={handleGetStartedClick}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                </svg>
+                {buttonText}
               </button>
-            )}
-            
-            <button
-              type="button"
-              className="card-nav-cta-button inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-full font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
-              style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-              onClick={handleGetStartedClick}
-            >
-              {buttonText}
-            </button>
+            </div>
           </div>
         </div>
 
