@@ -53,7 +53,7 @@ const Landing: FC = () => {
       <div className="relative z-10 flex-grow flex flex-col items-center justify-center px-4 py-16">
         
         {/* Main Logo with enhanced styling */}
-        <div className="relative mb-8 group">
+        <div className="relative mb-4 group">
           {/* Logo with enhanced glow */}
           <img 
             src="/Logo_big-Photoroom.png" 
