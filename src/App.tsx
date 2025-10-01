@@ -8,7 +8,7 @@ import './App.css'
 import Landing from './Components/pages/landing'
 import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
-import ManagePlans from './Components/pages/managePlans'
+import EditPlans from './Components/pages/editPlans'
 import Visualization from './Components/pages/Visualization'
 
 function AnimatedRoutes() {
@@ -39,7 +39,12 @@ function AnimatedRoutes() {
         } />
         <Route path="/manage-plans" element={
           <PageTransition>
-            <ManagePlans />
+            <EditPlans />
+          </PageTransition>
+        } />
+        <Route path="/edit-plan/:planId" element={
+          <PageTransition>
+            <CreatePlan />
           </PageTransition>
         } />
         <Route path="/visualization" element={
