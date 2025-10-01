@@ -26,7 +26,7 @@ db.serialize(() => {
       netzplan_id INTEGER,
       ref_number INTEGER NOT NULL,
       name TEXT NOT NULL,
-      dauer INTEGER,
+      dauer real NOT NULL,
       FOREIGN KEY (netzplan_id) REFERENCES netzplaene(id)
     )
   `);

@@ -7,22 +7,20 @@ import type { FC } from 'react';
 
 // Define the structure for an activity (Vorgang)
 interface PlanActivity {
-  id: string;                    // Internal unique ID
-  referenceNumber: number;       // Reference Number (1, 2, 3, etc.) - auto-generated
-  activityName: string;          // Activity Name
-  dauer: string;                 // Duration
-  vorgaengerid: string;         // Predecessor Reference Number
+  id: string;
+  referenceNumber: number;
+  activityName: string;
+  dauer: string;
+  vorgaengerid: string;
 }
 
 const CreatePlan: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   
-  // Plan metadata state
   const [planName, setPlanName] = useState('');
   const [planDescription, setPlanDescription] = useState('');
 
-  // Table data state - now for activities (Vorgänge)
   const [activities, setActivities] = useState<PlanActivity[]>([
     {
       id: '1',
@@ -33,7 +31,6 @@ const CreatePlan: FC = () => {
     }
   ]);
 
-  // Add new row to the table
   const addRow = () => {
     const newReferenceNumber = activities.length + 1;
     const newActivity: PlanActivity = {
@@ -46,25 +43,22 @@ const CreatePlan: FC = () => {
     setActivities([...activities, newActivity]);
   };
 
-  // Remove row from table
   const removeRow = (id: string) => {
     const updatedActivities = activities
       .filter(activity => activity.id !== id)
       .map((activity, index) => ({
         ...activity,
-        referenceNumber: index + 1 // Recalculate reference numbers
+        referenceNumber: index + 1
       }));
     setActivities(updatedActivities);
   };
 
-  // Update activity data
   const updateActivity = (id: string, field: keyof PlanActivity, value: string) => {
     setActivities(activities.map(activity => 
       activity.id === id ? { ...activity, [field]: value } : activity
     ));
   };
 
-  // Save plan
   const savePlan = () => {
     const plan = {
       name: planName,
@@ -76,26 +70,25 @@ const CreatePlan: FC = () => {
     console.log('Saving plan:', plan);
     // TODO: Implement actual save functionality
     alert(t('createPlan.planSaved'));
+
   };
+
+  // Check if all required fields are filled
+  const allActivitiesValid = activities.every(a => a.activityName.trim() !== '' && a.dauer.trim() !== '');
+  const canVisualize = planName.trim() !== '' && allActivitiesValid;
 
   return (
     <Layout>
-      {/* Create Plan Content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-7xl mx-auto px-6 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full">
-          {/* Title */}
           <h1 className="text-5xl font-bold text-white mb-6">
             {t('createPlan.title')}
           </h1>
-          
-          {/* Subtitle */}
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
             {t('createPlan.subtitle')}
           </p>
-          
-          {/* Plan Form Container */}
+
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
-            {/* Plan Metadata */}
             <div className="mb-8">
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
@@ -121,15 +114,13 @@ const CreatePlan: FC = () => {
               </div>
             </div>
 
-            {/* Table Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold text-white">{t('createPlan.planActivities')}</h2>
               <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105 active:scale-95">
                 + {t('createPlan.addActivity')}
               </Button>
             </div>
-            
-            {/* Editable Table */}
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -144,11 +135,7 @@ const CreatePlan: FC = () => {
                 <tbody>
                   {activities.map((activity) => (
                     <tr key={activity.id} className="border-b border-white/10 hover:bg-white/5">
-                      <td className="p-3">
-                        <div className="flex items-center justify-center">
-                          <span className="text-white font-medium">{activity.referenceNumber}</span>
-                        </div>
-                      </td>
+                      <td className="p-3 text-center text-white">{activity.referenceNumber}</td>
                       <td className="p-3">
                         <input
                           type="text"
@@ -160,7 +147,9 @@ const CreatePlan: FC = () => {
                       </td>
                       <td className="p-3">
                         <input
-                          type="text"
+                          type="number"
+                          step="0.5"
+                          min="0"
                           value={activity.dauer}
                           onChange={(e) => updateActivity(activity.id, 'dauer', e.target.value)}
                           placeholder={t('createPlan.durationPlaceholder')}
@@ -193,7 +182,6 @@ const CreatePlan: FC = () => {
                 </tbody>
               </table>
             </div>
-
             {/* Help for predecessor input */}
             <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
               <p className="text-blue-200 text-sm">
@@ -208,23 +196,17 @@ const CreatePlan: FC = () => {
               >
                 {t('common.cancel')}
               </Button>
-              <Button 
-                onClick={() => navigate('/visualization', { 
-                  state: { 
-                    planName, 
-                    planDescription, 
-                    activities: activities.filter(a => a.activityName.trim() !== '') 
-                  } 
-                })}
-                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                disabled={!planName.trim() || activities.length === 0}
+              <Button
+                onClick={() => navigate('/visualization', { state: { planName, planDescription, activities } })}
+                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!canVisualize}
               >
                 {t('createPlan.visualizePlan')}
               </Button>
-              <Button 
+              <Button
                 onClick={savePlan}
-                className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                disabled={!planName.trim()}
+                className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!planName.trim() || !allActivitiesValid}
               >
                 {t('createPlan.savePlan')}
               </Button>
