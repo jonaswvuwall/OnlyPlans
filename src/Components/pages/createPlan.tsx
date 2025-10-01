@@ -170,7 +170,7 @@ const CreatePlan: FC = () => {
                           type="text"
                           value={activity.vorgaengerid}
                           onChange={(e) => updateActivity(activity.id, 'vorgaengerid', e.target.value)}
-                          placeholder="e.g. 1,2,3 for multiple predecessors"
+                          placeholder="e.g. 1,2,3..."
                           className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </td>
