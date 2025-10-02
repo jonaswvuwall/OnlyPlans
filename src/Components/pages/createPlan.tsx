@@ -1,18 +1,20 @@
+// src/Components/pages/CreatePlan.tsx
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { FC } from 'react';
 import axios from 'axios';
 
-// Struktur für eine Aktivität
+const API_BASE = 'http://localhost:4000';
+
 interface PlanActivity {
-  id: string;
-  referenceNumber: number;
+  id: string;                // lokale ID für UI (Date.now() usw.)
+  referenceNumber: number;   // 1,2,3...
   activityName: string;
-  dauer: string;
-  vorgaenger: number[]; // IDs der Vorgänger
+  dauer: string;             // als string in UI, saved als float
+  vorgaenger: number[];      // in UI: array von referenceNumbers (1,2,3) — wird beim Speichern auf DB-IDs gemappt
 }
 
 const CreatePlan: FC = () => {
@@ -22,22 +24,21 @@ const CreatePlan: FC = () => {
   const [planName, setPlanName] = useState('');
   const [planDescription, setPlanDescription] = useState('');
   const [activities, setActivities] = useState<PlanActivity[]>([
-    { id: Date.now().toString(), referenceNumber: 1, activityName: '', dauer: '', vorgaenger: [] },
+    { id: Date.now().toString(), referenceNumber: 1, activityName: '', dauer: '', vorgaenger: [] }
   ]);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Neue Zeile hinzufügen
   const addRow = () => {
     const newActivity: PlanActivity = {
       id: Date.now().toString(),
       referenceNumber: activities.length + 1,
       activityName: '',
       dauer: '',
-      vorgaenger: [],
+      vorgaenger: []
     };
-    setActivities([...activities, newActivity]);
+    setActivities(prev => [...prev, newActivity]);
   };
 
-  // Zeile entfernen
   const removeRow = (id: string) => {
     const updated = activities
       .filter(a => a.id !== id)
@@ -45,43 +46,73 @@ const CreatePlan: FC = () => {
     setActivities(updated);
   };
 
-  // Activity-Felder updaten
-  const updateActivity = (id: string, field: keyof PlanActivity, value: string | number[]) => {
-    setActivities(activities.map(a =>
-      a.id === id ? { ...a, [field]: value } : a
-    ));
+  const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
+    setActivities(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
 
-  // Prüfen, ob alle Pflichtfelder gefüllt sind
+  // Validierung: activityName und dauer Pflicht
   const allActivitiesValid = activities.every(a => a.activityName.trim() !== '' && a.dauer !== '');
+  const canSave = planName.trim() !== '' && allActivitiesValid && !isSaving;
 
+  // --- Save logic: create plan -> create activities -> update mappings with DB-IDs ---
   const savePlan = async () => {
-    if (!planName.trim() || !allActivitiesValid) return;
+    if (!canSave) return;
+    setIsSaving(true);
 
     try {
-      // 1️⃣ Netzplan erstellen
-      const planResp = await axios.post('http://localhost:4000/netzplaene', {
+      // 1) Netzplan erstellen
+      const planResp = await axios.post(`${API_BASE}/netzplaene`, {
         name: planName,
-        description: planDescription,
+        description: planDescription
       });
-      const planId = planResp.data.id;
+      const planId: number = planResp.data.id;
+      console.log('Plan created id=', planId);
 
-      // 2️⃣ Aktivitäten speichern
+      // 2) Aktivitäten erstellen (ohne Vorgänger) und Map refNumber -> DB id sammeln
+      const refNumToDbId = new Map<number, number>();
       for (const a of activities) {
-        await axios.post('http://localhost:4000/aktivitaeten', {
+        const createResp = await axios.post(`${API_BASE}/aktivitaeten`, {
           netzplan_id: planId,
           ref_number: a.referenceNumber,
           name: a.activityName,
-          dauer: parseFloat(a.dauer),
-          vorgaenger: a.vorgaenger,
+          dauer: parseFloat(a.dauer || '0')
+          // vorgaenger we leave empty on creation — we'll handle mappings in step 3
         });
+        const dbId: number = createResp.data.id;
+        refNumToDbId.set(a.referenceNumber, dbId);
+        console.log(`Activity created ref=${a.referenceNumber} -> dbId=${dbId}`);
       }
 
-      // 3️⃣ Weiterleitung
+      // 3) Vorgänger-Mappings setzen (PUT pro Aktivität) — map von referenceNumber -> DB id
+      for (const a of activities) {
+        if (!a.vorgaenger || a.vorgaenger.length === 0) continue;
+
+        const vorgaengerDbIds = a.vorgaenger
+          .map(refNum => refNumToDbId.get(refNum))
+          .filter((x): x is number => typeof x === 'number'); // filter undefined
+
+        if (vorgaengerDbIds.length === 0) continue;
+
+        const aktivitaetDbId = refNumToDbId.get(a.referenceNumber);
+        if (!aktivitaetDbId) continue;
+
+        await axios.put(`${API_BASE}/aktivitaeten/${aktivitaetDbId}`, {
+          ref_number: a.referenceNumber,
+          name: a.activityName,
+          dauer: parseFloat(a.dauer || '0'),
+          vorgaenger: vorgaengerDbIds
+        });
+
+        console.log(`Mappings for activity dbId=${aktivitaetDbId} set to:`, vorgaengerDbIds);
+      }
+
+      // Fertig — weiterleiten
+      setIsSaving(false);
       navigate('/manage-plans');
     } catch (err) {
-      console.error('Fehler beim Speichern:', err);
-      alert('Fehler beim Speichern. Prüfe die Konsole.');
+      console.error('Speichern fehlgeschlagen:', err);
+      setIsSaving(false);
+      alert('Fehler beim Speichern. Schau in die Konsole für Details.');
     }
   };
 
@@ -93,7 +124,7 @@ const CreatePlan: FC = () => {
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">{t('createPlan.subtitle')}</p>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
-            {/* Plan-Metadaten */}
+            {/* Metadata */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="block text-white font-medium mb-2">{t('createPlan.planName')} *</label>
@@ -117,12 +148,13 @@ const CreatePlan: FC = () => {
               </div>
             </div>
 
-            {/* Aktivitäten-Tabelle */}
+            {/* Table header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold text-white">{t('createPlan.planActivities')}</h2>
               <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300">+ {t('createPlan.addActivity')}</Button>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -159,12 +191,11 @@ const CreatePlan: FC = () => {
                         />
                       </td>
                       <td className="p-3">
-                        {/* Multiselect Checkbox für Vorgänger */}
                         {activities.filter(x => x.id !== a.id).map(prev => (
-                          <label key={prev.id} className="inline-flex items-center mr-2 text-white">
+                          <label key={prev.id} className="inline-flex items-center mr-4 text-white">
                             <input
                               type="checkbox"
-                              className="mr-1"
+                              className="mr-2"
                               checked={a.vorgaenger.includes(prev.referenceNumber)}
                               onChange={e => {
                                 const newVorgaenger = e.target.checked
@@ -173,7 +204,7 @@ const CreatePlan: FC = () => {
                                 updateActivity(a.id, 'vorgaenger', newVorgaenger);
                               }}
                             />
-                            {prev.referenceNumber}
+                            <span>{prev.referenceNumber} {prev.activityName || ''}</span>
                           </label>
                         ))}
                       </td>
@@ -189,13 +220,9 @@ const CreatePlan: FC = () => {
             </div>
 
             <div className="mt-8 flex justify-end gap-4">
-              <Button variant="outline" className="border-white/20 text-white">Cancel</Button>
-              <Button
-                onClick={savePlan}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-                disabled={!planName.trim() || !allActivitiesValid}
-              >
-                {t('createPlan.savePlan')}
+              <Button variant="outline" className="border-white/20 text-white" onClick={() => navigate('/manage-plans')}>{t('common.cancel')}</Button>
+              <Button onClick={savePlan} disabled={!canSave} className="bg-purple-600 hover:bg-purple-700 text-white">
+                {isSaving ? t('createPlan.saving') : t('createPlan.savePlan')}
               </Button>
             </div>
           </div>
