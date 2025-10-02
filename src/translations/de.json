@@ -62,7 +62,7 @@
     "activityNamePlaceholder": "Aktivitätsname eingeben...",
     "duration": "Dauer *",
     "durationPlaceholder": "Dauer...",
-    "predecessors": "Vorgänger (kommagetrennt)",
+    "predecessors": "Vorgänger",
     "predecessorsPlaceholder": "z.B. 1,2,3...",
     "actions": "Aktionen",
     "tip": "Tipp:",
@@ -186,7 +186,9 @@
       "delete": "Löschen"
     },
     "deleteConfirmation": "Sind Sie sicher, dass Sie den Plan '{planName}' löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteSuccess": "Plan erfolgreich gelöscht!"
+    "deleteSuccess": "Plan erfolgreich gelöscht!",
+    "deleteError": "Fehler beim Löschen des Plans. Bitte versuchen Sie es erneut.",
+    "loadError": "Fehler beim Laden der Pläne aus der Datenbank."
   },
   "operation": {
     "title": "Operationen",

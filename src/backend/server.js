@@ -9,7 +9,9 @@ app.use(express.json());
 
 const db = new sqlite3.Database("database.db");
 
-// Tabellen erstellen, falls sie nicht existieren
+// -------------------
+// Tabellen erstellen
+// -------------------
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS netzplaene (
@@ -44,11 +46,19 @@ db.serialize(() => {
 // -------------------
 // Netzplan-Endpunkte
 // -------------------
-
 app.get("/netzplaene", (_req, res) => {
   db.all("SELECT * FROM netzplaene", (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
+  });
+});
+
+app.get("/netzplaene/:id", (req, res) => {
+  const netzplanId = parseInt(req.params.id);
+  db.get("SELECT * FROM netzplaene WHERE id = ?", [netzplanId], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: "Netzplan not found" });
+    res.json(row);
   });
 });
 
@@ -64,36 +74,44 @@ app.post("/netzplaene", (req, res) => {
   );
 });
 
-// DELETE Netzplan
+// ❌ Netzplan löschen inkl. Aktivitäten + Vorgänger
 app.delete("/netzplaene/:id", (req, res) => {
   const netzplanId = parseInt(req.params.id);
 
-  // Zuerst alle Aktivitäten des Plans abrufen
   db.all("SELECT id FROM aktivitaeten WHERE netzplan_id = ?", [netzplanId], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
 
     const aktivitaetIds = rows.map(r => r.id);
     if (aktivitaetIds.length > 0) {
       const placeholders = aktivitaetIds.map(() => "?").join(",");
-      
-      // Vorgänger-Mappings löschen
-      db.run(`DELETE FROM vorgaenger_mappings WHERE aktivitaet_id IN (${placeholders})`, aktivitaetIds, (err2) => {
-        if (err2) return res.status(500).json({ error: err2.message });
 
-        // Aktivitäten löschen
-        db.run(`DELETE FROM aktivitaeten WHERE id IN (${placeholders})`, aktivitaetIds, (err3) => {
-          if (err3) return res.status(500).json({ error: err3.message });
+      // Vorgänger-Mappings löschen (als Aktivität ODER als Vorgänger)
+      db.run(
+        `DELETE FROM vorgaenger_mappings 
+         WHERE aktivitaet_id IN (${placeholders}) 
+         OR vorgaenger_id IN (${placeholders})`,
+        [...aktivitaetIds, ...aktivitaetIds],
+        (err2) => {
+          if (err2) return res.status(500).json({ error: err2.message });
 
-          // Netzplan löschen
-          db.run("DELETE FROM netzplaene WHERE id = ?", [netzplanId], function(err4) {
-            if (err4) return res.status(500).json({ error: err4.message });
-            res.json({ deleted: this.changes });
-          });
-        });
-      });
+          // Aktivitäten löschen
+          db.run(
+            `DELETE FROM aktivitaeten WHERE id IN (${placeholders})`,
+            aktivitaetIds,
+            (err3) => {
+              if (err3) return res.status(500).json({ error: err3.message });
+
+              // Netzplan löschen
+              db.run("DELETE FROM netzplaene WHERE id = ?", [netzplanId], function (err4) {
+                if (err4) return res.status(500).json({ error: err4.message });
+                res.json({ deleted: this.changes });
+              });
+            }
+          );
+        }
+      );
     } else {
-      // Wenn keine Aktivitäten, nur Netzplan löschen
-      db.run("DELETE FROM netzplaene WHERE id = ?", [netzplanId], function(err) {
+      db.run("DELETE FROM netzplaene WHERE id = ?", [netzplanId], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ deleted: this.changes });
       });
@@ -101,11 +119,9 @@ app.delete("/netzplaene/:id", (req, res) => {
   });
 });
 
-
 // -------------------
 // Aktivitäten-Endpunkte
 // -------------------
-
 app.get("/netzplaene/:id/aktivitaeten", (req, res) => {
   const netzplanId = parseInt(req.params.id);
   db.all(
@@ -191,14 +207,18 @@ app.put("/aktivitaeten/:id", (req, res) => {
 app.delete("/aktivitaeten/:id", (req, res) => {
   const id = parseInt(req.params.id);
 
-  db.run("DELETE FROM vorgaenger_mappings WHERE aktivitaet_id = ?", [id], err1 => {
-    if (err1) return res.status(500).json({ error: err1.message });
+  db.run(
+    "DELETE FROM vorgaenger_mappings WHERE aktivitaet_id = ? OR vorgaenger_id = ?",
+    [id, id],
+    (err1) => {
+      if (err1) return res.status(500).json({ error: err1.message });
 
-    db.run("DELETE FROM aktivitaeten WHERE id = ?", [id], function (err2) {
-      if (err2) return res.status(500).json({ error: err2.message });
-      res.json({ deleted: this.changes });
-    });
-  });
+      db.run("DELETE FROM aktivitaeten WHERE id = ?", [id], function (err2) {
+        if (err2) return res.status(500).json({ error: err2.message });
+        res.json({ deleted: this.changes });
+      });
+    }
+  );
 });
 
 // -------------------
@@ -206,5 +226,5 @@ app.delete("/aktivitaeten/:id", (req, res) => {
 // -------------------
 const PORT = 4000;
 app.listen(PORT, () => {
-  console.log(`Backend läuft auf http://localhost:${PORT}`);
+  console.log(`✅ Backend läuft auf http://localhost:${PORT}`);
 });
