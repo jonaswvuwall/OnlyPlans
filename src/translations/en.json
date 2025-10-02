@@ -62,7 +62,7 @@
     "activityNamePlaceholder": "Enter activity name...",
     "duration": "Duration *",
     "durationPlaceholder": "Duration...",
-    "predecessors": "Predecessors (comma-separated)",
+    "predecessors": "Predecessors",
     "predecessorsPlaceholder": "e.g. 1,2,3...",
     "actions": "Actions",
     "tip": "Tip:",

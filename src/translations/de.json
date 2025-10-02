@@ -62,7 +62,7 @@
     "activityNamePlaceholder": "Aktivitätsname eingeben...",
     "duration": "Dauer *",
     "durationPlaceholder": "Dauer...",
-    "predecessors": "Vorgänger (kommagetrennt)",
+    "predecessors": "Vorgänger",
     "predecessorsPlaceholder": "z.B. 1,2,3...",
     "actions": "Aktionen",
     "tip": "Tipp:",
