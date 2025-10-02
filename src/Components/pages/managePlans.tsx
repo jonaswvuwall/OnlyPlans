@@ -83,7 +83,7 @@ const ManagePlans: FC = () => {
   }, [t]);
 
   const handleEditPlan = (planId: number) => {
-    navigate(`/netzplaene/${planId}/edit`);
+    navigate(`/edit-plan/${planId}`);
   };
 
   const handleViewPlan = (planId: number) => {
