@@ -1,182 +1,148 @@
-// src/Components/pages/CreatePlan.tsx
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { FC } from 'react';
-import axios from 'axios';
 
-const API_BASE = 'http://localhost:4000';
-
+// Define the structure for an activity (Vorgang)
 interface PlanActivity {
-  id: string;                // lokale ID für UI (Date.now() usw.)
-  referenceNumber: number;   // 1,2,3...
+  id: string;
+  referenceNumber: number;
   activityName: string;
-  dauer: string;             // als string in UI, saved als float
-  vorgaenger: number[];      // in UI: array von referenceNumbers (1,2,3) — wird beim Speichern auf DB-IDs gemappt
+  dauer: string;
+  vorgaengerid: string;
 }
 
 const CreatePlan: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-
+  
   const [planName, setPlanName] = useState('');
   const [planDescription, setPlanDescription] = useState('');
-  const [activities, setActivities] = useState<PlanActivity[]>([
-    { id: Date.now().toString(), referenceNumber: 1, activityName: '', dauer: '', vorgaenger: [] }
-  ]);
-  const [isSaving, setIsSaving] = useState(false);
 
-  const addRow = () => {
-    const newActivity: PlanActivity = {
-      id: Date.now().toString(),
-      referenceNumber: activities.length + 1,
+  const [activities, setActivities] = useState<PlanActivity[]>([
+    {
+      id: '1',
+      referenceNumber: 1,
       activityName: '',
       dauer: '',
-      vorgaenger: []
+      vorgaengerid: ''
+    }
+  ]);
+
+  const addRow = () => {
+    const newReferenceNumber = activities.length + 1;
+    const newActivity: PlanActivity = {
+      id: Date.now().toString(),
+      referenceNumber: newReferenceNumber,
+      activityName: '',
+      dauer: '',
+      vorgaengerid: ''
     };
-    setActivities(prev => [...prev, newActivity]);
+    setActivities([...activities, newActivity]);
   };
 
   const removeRow = (id: string) => {
-    const updated = activities
-      .filter(a => a.id !== id)
-      .map((a, idx) => ({ ...a, referenceNumber: idx + 1 }));
-    setActivities(updated);
+    const updatedActivities = activities
+      .filter(activity => activity.id !== id)
+      .map((activity, index) => ({
+        ...activity,
+        referenceNumber: index + 1
+      }));
+    setActivities(updatedActivities);
   };
 
-  const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
-    setActivities(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
+  const updateActivity = (id: string, field: keyof PlanActivity, value: string) => {
+    setActivities(activities.map(activity => 
+      activity.id === id ? { ...activity, [field]: value } : activity
+    ));
   };
 
-  // Validierung: activityName und dauer Pflicht
-  const allActivitiesValid = activities.every(a => a.activityName.trim() !== '' && a.dauer !== '');
-  const canSave = planName.trim() !== '' && allActivitiesValid && !isSaving;
+  const savePlan = () => {
+    const plan = {
+      name: planName,
+      description: planDescription,
+      activities: activities,
+      createdDate: new Date().toISOString().split('T')[0],
+      status: 'Active'
+    };
+    console.log('Saving plan:', plan);
+    // TODO: Implement actual save functionality
+    alert(t('createPlan.planSaved'));
 
-  // --- Save logic: create plan -> create activities -> update mappings with DB-IDs ---
-  const savePlan = async () => {
-    if (!canSave) return;
-    setIsSaving(true);
-
-    try {
-      // 1) Netzplan erstellen
-      const planResp = await axios.post(`${API_BASE}/netzplaene`, {
-        name: planName,
-        description: planDescription
-      });
-      const planId: number = planResp.data.id;
-      console.log('Plan created id=', planId);
-
-      // 2) Aktivitäten erstellen (ohne Vorgänger) und Map refNumber -> DB id sammeln
-      const refNumToDbId = new Map<number, number>();
-      for (const a of activities) {
-        const createResp = await axios.post(`${API_BASE}/aktivitaeten`, {
-          netzplan_id: planId,
-          ref_number: a.referenceNumber,
-          name: a.activityName,
-          dauer: parseFloat(a.dauer || '0')
-          // vorgaenger we leave empty on creation — we'll handle mappings in step 3
-        });
-        const dbId: number = createResp.data.id;
-        refNumToDbId.set(a.referenceNumber, dbId);
-        console.log(`Activity created ref=${a.referenceNumber} -> dbId=${dbId}`);
-      }
-
-      // 3) Vorgänger-Mappings setzen (PUT pro Aktivität) — map von referenceNumber -> DB id
-      for (const a of activities) {
-        if (!a.vorgaenger || a.vorgaenger.length === 0) continue;
-
-        const vorgaengerDbIds = a.vorgaenger
-          .map(refNum => refNumToDbId.get(refNum))
-          .filter((x): x is number => typeof x === 'number'); // filter undefined
-
-        if (vorgaengerDbIds.length === 0) continue;
-
-        const aktivitaetDbId = refNumToDbId.get(a.referenceNumber);
-        if (!aktivitaetDbId) continue;
-
-        await axios.put(`${API_BASE}/aktivitaeten/${aktivitaetDbId}`, {
-          ref_number: a.referenceNumber,
-          name: a.activityName,
-          dauer: parseFloat(a.dauer || '0'),
-          vorgaenger: vorgaengerDbIds
-        });
-
-        console.log(`Mappings for activity dbId=${aktivitaetDbId} set to:`, vorgaengerDbIds);
-      }
-
-      // Fertig — weiterleiten
-      setIsSaving(false);
-      navigate('/manage-plans');
-    } catch (err) {
-      console.error('Speichern fehlgeschlagen:', err);
-      setIsSaving(false);
-      alert('Fehler beim Speichern. Schau in die Konsole für Details.');
-    }
   };
+
+  // Check if all required fields are filled
+  const allActivitiesValid = activities.every(a => a.activityName.trim() !== '' && a.dauer.trim() !== '');
+  const canVisualize = planName.trim() !== '' && allActivitiesValid;
 
   return (
     <Layout>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-7xl mx-auto px-6 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full">
-          <h1 className="text-5xl font-bold text-white mb-6">{t('createPlan.title')}</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">{t('createPlan.subtitle')}</p>
+          <h1 className="text-5xl font-bold text-white mb-6">
+            {t('createPlan.title')}
+          </h1>
+          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
+            {t('createPlan.subtitle')}
+          </p>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
-            {/* Metadata */}
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className="block text-white font-medium mb-2">{t('createPlan.planName')} *</label>
-                <input
-                  type="text"
-                  value={planName}
-                  onChange={e => setPlanName(e.target.value)}
-                  placeholder={t('createPlan.planNamePlaceholder')}
-                  className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-white font-medium mb-2">{t('createPlan.description')}</label>
-                <input
-                  type="text"
-                  value={planDescription}
-                  onChange={e => setPlanDescription(e.target.value)}
-                  placeholder={t('createPlan.descriptionPlaceholder')}
-                  className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+            <div className="mb-8">
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-white font-medium mb-2">{t('createPlan.planName')} *</label>
+                  <input
+                    type="text"
+                    value={planName}
+                    onChange={(e) => setPlanName(e.target.value)}
+                    placeholder={t('createPlan.planNamePlaceholder')}
+                    className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white font-medium mb-2">{t('createPlan.description')}</label>
+                  <input
+                    type="text"
+                    value={planDescription}
+                    onChange={(e) => setPlanDescription(e.target.value)}
+                    placeholder={t('createPlan.descriptionPlaceholder')}
+                    className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Table header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold text-white">{t('createPlan.planActivities')}</h2>
-              <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300">+ {t('createPlan.addActivity')}</Button>
+              <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105 active:scale-95">
+                + {t('createPlan.addActivity')}
+              </Button>
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="text-left text-white font-medium p-3">#</th>
-                    <th className="text-left text-white font-medium p-3">{t('createPlan.activityName')}</th>
-                    <th className="text-left text-white font-medium p-3">{t('createPlan.duration')}</th>
-                    <th className="text-left text-white font-medium p-3">{t('createPlan.predecessors')}</th>
-                    <th className="text-left text-white font-medium p-3">{t('createPlan.actions')}</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[150px]">{t('createPlan.referenceNumber')}</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[200px]">{t('createPlan.activityName')}</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[120px]">{t('createPlan.duration')}</th>
+                    <th className="text-left text-white font-medium p-3 min-w-[180px]">{t('createPlan.predecessors')}</th>
+                    <th className="text-left text-white font-medium p-3 w-[80px]">{t('createPlan.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {activities.map(a => (
-                    <tr key={a.id} className="border-b border-white/10 hover:bg-white/5">
-                      <td className="p-3 text-center text-white">{a.referenceNumber}</td>
+                  {activities.map((activity) => (
+                    <tr key={activity.id} className="border-b border-white/10 hover:bg-white/5">
+                      <td className="p-3 text-center text-white">{activity.referenceNumber}</td>
                       <td className="p-3">
                         <input
                           type="text"
-                          value={a.activityName}
-                          onChange={e => updateActivity(a.id, 'activityName', e.target.value)}
-                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                          value={activity.activityName}
+                          onChange={(e) => updateActivity(activity.id, 'activityName', e.target.value)}
                           placeholder={t('createPlan.activityNamePlaceholder')}
+                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </td>
                       <td className="p-3">
@@ -184,33 +150,31 @@ const CreatePlan: FC = () => {
                           type="number"
                           step="0.5"
                           min="0"
-                          value={a.dauer}
-                          onChange={e => updateActivity(a.id, 'dauer', e.target.value)}
-                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                          value={activity.dauer}
+                          onChange={(e) => updateActivity(activity.id, 'dauer', e.target.value)}
                           placeholder={t('createPlan.durationPlaceholder')}
+                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </td>
                       <td className="p-3">
-                        {activities.filter(x => x.id !== a.id).map(prev => (
-                          <label key={prev.id} className="inline-flex items-center mr-4 text-white">
-                            <input
-                              type="checkbox"
-                              className="mr-2"
-                              checked={a.vorgaenger.includes(prev.referenceNumber)}
-                              onChange={e => {
-                                const newVorgaenger = e.target.checked
-                                  ? [...a.vorgaenger, prev.referenceNumber]
-                                  : a.vorgaenger.filter(v => v !== prev.referenceNumber);
-                                updateActivity(a.id, 'vorgaenger', newVorgaenger);
-                              }}
-                            />
-                            <span>{prev.referenceNumber} {prev.activityName || ''}</span>
-                          </label>
-                        ))}
+                        <input
+                          type="text"
+                          value={activity.vorgaengerid}
+                          onChange={(e) => updateActivity(activity.id, 'vorgaengerid', e.target.value)}
+                          placeholder={t('createPlan.predecessorsPlaceholder')}
+                          className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        />
                       </td>
                       <td className="p-3">
                         {activities.length > 1 && (
-                          <Button onClick={() => removeRow(a.id)} size="sm" variant="outline" className="border-red-500 text-red-400">🗑️</Button>
+                          <Button
+                            onClick={() => removeRow(activity.id)}
+                            size="sm"
+                            variant="outline"
+                            className="border-red-500 text-red-400 hover:bg-red-500/20"
+                          >
+                            🗑️
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -218,11 +182,33 @@ const CreatePlan: FC = () => {
                 </tbody>
               </table>
             </div>
+            {/* Help for predecessor input */}
+            <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+              <p className="text-blue-200 text-sm">
+                💡 <strong>{t('createPlan.tip')}</strong> {t('createPlan.tipText')}
+              </p>
+            </div>
 
             <div className="mt-8 flex justify-end gap-4">
-              <Button variant="outline" className="border-white/20 text-white" onClick={() => navigate('/manage-plans')}>{t('common.cancel')}</Button>
-              <Button onClick={savePlan} disabled={!canSave} className="bg-purple-600 hover:bg-purple-700 text-white">
-                {isSaving ? t('createPlan.saving') : t('createPlan.savePlan')}
+              <Button 
+                variant="outline" 
+                className="border-white/20 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 active:scale-95"
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                onClick={() => navigate('/visualization', { state: { planName, planDescription, activities } })}
+                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!canVisualize}
+              >
+                {t('createPlan.visualizePlan')}
+              </Button>
+              <Button
+                onClick={savePlan}
+                className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!planName.trim() || !allActivitiesValid}
+              >
+                {t('createPlan.savePlan')}
               </Button>
             </div>
           </div>
