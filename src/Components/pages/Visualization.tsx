@@ -1,6 +1,6 @@
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import type { FC } from 'react';
 import html2canvas from 'html2canvas';
@@ -8,6 +8,24 @@ import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Download } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import axios from 'axios';
+
+// Define the structure for a backend plan
+interface BackendPlan {
+  id: number;
+  name: string;
+  description: string;
+}
+
+// Define the structure for a backend activity
+interface BackendActivity {
+  id: number;
+  ref_number: number;
+  name: string;
+  dauer: number;
+  netzplan_id: number;
+  vorgaenger?: number[]; // Array of predecessor activity IDs
+}
 
 // Define the structure for an activity from createPlan
 interface PlanActivity {
@@ -45,11 +63,13 @@ interface NetworkPlanData {
 
 const Visualization: FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { planId } = useParams<{ planId: string }>();
   const { t } = useTranslation();
   const visualizationRef = useRef<HTMLDivElement>(null);
   const [networkActivities, setNetworkActivities] = useState<NetworkActivity[]>([]);
   const [planData, setPlanData] = useState<NetworkPlanData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [nodePositions, setNodePositions] = useState<Map<string, NodePosition>>(new Map());
   const [isExporting, setIsExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -66,23 +86,113 @@ const Visualization: FC = () => {
   });
 
   useEffect(() => {
-    const state = location.state as NetworkPlanData;
-    if (state && state.activities) {
-      setPlanData(state);
-      const calculatedActivities = calculateNetworkPlan(state.activities);
-      setNetworkActivities(calculatedActivities);
-      
-      // Initialize node positions with grid layout
-      const positions = new Map<string, NodePosition>();
-      calculatedActivities.forEach((activity, index) => {
-        const spacing = 300;
-        const x = 150 + (index % 4) * spacing;
-        const y = 150 + Math.floor(index / 4) * 280;
-        positions.set(activity.id, { x, y });
-      });
-      setNodePositions(positions);
-    }
-  }, [location.state]);
+    const fetchPlanData = async () => {
+      if (!planId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        console.log('Fetching plan with ID:', planId);
+        
+        // Test if backend is reachable first by trying to get all plans
+        console.log('Testing backend connection...');
+        const testResponse = await axios.get('http://localhost:4000/netzplaene');
+        console.log('Backend is reachable. Available plans:', testResponse.data);
+        
+        // Find the specific plan
+        const plan = testResponse.data.find((p: BackendPlan) => p.id === parseInt(planId));
+        if (!plan) {
+          throw new Error(`Plan with ID ${planId} not found. Available plan IDs: ${testResponse.data.map((p: BackendPlan) => p.id).join(', ')}`);
+        }
+        console.log('Found plan:', plan);
+        
+        // Fetch activities for this plan
+        console.log('Fetching activities...');
+        const activitiesResponse = await axios.get(`http://localhost:4000/netzplaene/${planId}/aktivitaeten`);
+        console.log('Activities response received:', activitiesResponse);
+        console.log('Activities data:', activitiesResponse.data);
+        const activities = activitiesResponse.data;
+        
+        const networkPlanData: NetworkPlanData = {
+          planName: plan.name,
+          planDescription: plan.description,
+          activities: activities.map((activity: BackendActivity) => {
+            // Convert predecessor activity IDs to reference numbers
+            let predecessorRefNumbers = '';
+            if (activity.vorgaenger && activity.vorgaenger.length > 0) {
+              // Find the reference numbers for the predecessor activity IDs
+              const predecessorRefs = activity.vorgaenger.map(predecessorId => {
+                const predecessorActivity = activities.find((a: BackendActivity) => a.id === predecessorId);
+                return predecessorActivity ? predecessorActivity.ref_number : null;
+              }).filter(ref => ref !== null);
+              
+              predecessorRefNumbers = predecessorRefs.join(',');
+            }
+            
+            return {
+              id: activity.id.toString(),
+              referenceNumber: activity.ref_number,
+              activityName: activity.name,
+              dauer: activity.dauer.toString(),
+              vorgaengerid: predecessorRefNumbers
+            };
+          })
+        };
+
+        setPlanData(networkPlanData);
+        
+        // Check if there are activities to visualize
+        if (networkPlanData.activities.length === 0) {
+          console.warn('Plan has no activities to visualize');
+          setNetworkActivities([]);
+          setNodePositions(new Map());
+          return;
+        }
+        
+        const calculatedActivities = calculateNetworkPlan(networkPlanData.activities);
+        setNetworkActivities(calculatedActivities);
+        
+        // Initialize node positions with grid layout
+        const positions = new Map<string, NodePosition>();
+        calculatedActivities.forEach((activity, index) => {
+          const spacing = 300;
+          const x = 150 + (index % 4) * spacing;
+          const y = 150 + Math.floor(index / 4) * 280;
+          positions.set(activity.id, { x, y });
+        });
+        setNodePositions(positions);
+      } catch (error: unknown) {
+        console.error('Error fetching plan data:', error);
+        
+        let errorMessage = 'Unknown error occurred';
+        
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_NETWORK') {
+          errorMessage = 'Cannot connect to backend server. Please make sure the server is running on http://localhost:4000';
+        } else if (error && typeof error === 'object' && 'response' in error) {
+          // Server responded with error status
+          const axiosError = error as { response?: { status?: number; data?: { error?: string }; statusText?: string } };
+          if (axiosError.response?.status === 404) {
+            errorMessage = `Plan with ID ${planId} not found in database`;
+          } else {
+            errorMessage = `Server error: ${axiosError.response?.status || 'Unknown'} - ${axiosError.response?.data?.error || axiosError.response?.statusText || 'Unknown error'}`;
+          }
+        } else if (error && typeof error === 'object' && 'request' in error) {
+          // Request was made but no response received
+          errorMessage = 'No response from server. Check if backend is running on http://localhost:4000';
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        
+        setError(errorMessage);
+        setPlanData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlanData();
+  }, [planId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -726,6 +836,80 @@ const Visualization: FC = () => {
 
   const criticalPath = networkActivities.filter(a => a.isCritical);
   const projectDuration = Math.max(...networkActivities.map(a => a.fez));
+
+  // Loading state
+  if (loading) {
+    return (
+      <Layout>
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full mx-auto px-4 min-h-[calc(100vh-200px)]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">⏳</div>
+            <h2 className="text-2xl font-semibold text-white mb-2">Loading Plan...</h2>
+            <p className="text-white/70">Fetching plan data from database...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Error state - no planId provided
+  if (!planId) {
+    return (
+      <Layout>
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full mx-auto px-4 min-h-[calc(100vh-200px)]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h2 className="text-2xl font-semibold text-white mb-2">No Plan Selected</h2>
+            <p className="text-white/70 mb-6">Please select a plan to visualize from the manage plans page.</p>
+            <Button
+              className="bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+              onClick={() => navigate('/manage-plans')}
+            >
+              Go to Manage Plans
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Error state - no plan data loaded
+  if (!planData) {
+    return (
+      <Layout>
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full mx-auto px-4 min-h-[calc(100vh-200px)]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h2 className="text-2xl font-semibold text-white mb-2">
+              {error ? 'Error Loading Plan' : 'Plan Not Found'}
+            </h2>
+            <p className="text-white/70 mb-6">
+              {error || 'The requested plan could not be loaded. It may have been deleted or doesn\'t exist.'}
+            </p>
+            <div className="space-y-3">
+              <Button
+                className="bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                onClick={() => navigate('/manage-plans')}
+              >
+                Go to Manage Plans
+              </Button>
+              {error && (
+                <div className="mt-4">
+                  <Button
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10"
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

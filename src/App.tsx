@@ -8,8 +8,9 @@ import './App.css'
 import Landing from './Components/pages/landing'
 import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
-import EditPlans from './Components/pages/managePlans'
+import EditPlans from './Components/pages/editPlan'
 import Visualization from './Components/pages/Visualization'
+import ManagePlans from './Components/pages/managePlans'
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -39,15 +40,15 @@ function AnimatedRoutes() {
         } />
         <Route path="/manage-plans" element={
           <PageTransition>
-            <EditPlans />
+            <ManagePlans />
           </PageTransition>
         } />
         <Route path="/edit-plan/:planId" element={
           <PageTransition>
-            <CreatePlan />
+            <EditPlans />
           </PageTransition>
         } />
-        <Route path="/visualization" element={
+        <Route path="/visualization/:planId" element={
           <PageTransition>
             <Visualization />
           </PageTransition>

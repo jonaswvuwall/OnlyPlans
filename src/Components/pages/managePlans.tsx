@@ -6,6 +6,13 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import axios from 'axios';
 
+// Define the structure for a backend plan
+interface BackendPlan {
+  id: number;
+  name: string;
+  description: string;
+}
+
 // Define the structure for a plan
 interface Plan {
   id: number;
@@ -19,40 +26,64 @@ const ManagePlans: FC = () => {
   const { t } = useTranslation();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Load plans from backend
-  const fetchPlans = async () => {
-    try {
-      const { data: netzplaene } = await axios.get('http://localhost:4000/netzplaene');
-
-      // Fetch activities count for each plan
-      const plansWithCounts = await Promise.all(
-        netzplaene.map(async (plan: any) => {
-          const { data: activities } = await axios.get(`http://localhost:4000/netzplaene/${plan.id}/aktivitaeten`);
-          return {
-            id: plan.id,
-            name: plan.name,
-            description: plan.description,
-            activityCount: activities.length,
-          };
-        })
-      );
-
-      setPlans(plansWithCounts);
-    } catch (err) {
-      console.error('Error fetching plans:', err);
-      alert(t('editPlans.loadError'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Load plans from backend
+    const fetchPlans = async () => {
+      try {
+        console.log('Fetching plans from backend...');
+        const { data: netzplaene } = await axios.get('http://localhost:4000/netzplaene');
+        console.log('Plans fetched:', netzplaene);
+
+        // Fetch activities count for each plan
+        const plansWithCounts = await Promise.all(
+          netzplaene.map(async (plan: BackendPlan) => {
+            try {
+              const { data: activities } = await axios.get(`http://localhost:4000/netzplaene/${plan.id}/aktivitaeten`);
+              return {
+                id: plan.id,
+                name: plan.name,
+                description: plan.description,
+                activityCount: activities.length,
+              };
+            } catch (activityError) {
+              console.warn(`Failed to fetch activities for plan ${plan.id}:`, activityError);
+              // Return plan with 0 activities if activity fetch fails
+              return {
+                id: plan.id,
+                name: plan.name,
+                description: plan.description,
+                activityCount: 0,
+              };
+            }
+          })
+        );
+
+        setPlans(plansWithCounts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+        
+        let errorMessage = 'Failed to load plans';
+        if (err && typeof err === 'object' && 'code' in err && err.code === 'ERR_NETWORK') {
+          errorMessage = 'Cannot connect to backend server. Please make sure it is running on http://localhost:4000';
+        } else if (err instanceof Error) {
+          errorMessage = `Error: ${err.message}`;
+        }
+        
+        setError(errorMessage);
+        setPlans([]); // Set empty array instead of keeping old data
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPlans();
-  }, []);
+  }, [t]);
 
   const handleEditPlan = (planId: number) => {
-    navigate(`/netzplaene/${planId}/edit`);
+    navigate(`/edit-plan/${planId}`);
   };
 
   const handleViewPlan = (planId: number) => {
@@ -81,6 +112,49 @@ const ManagePlans: FC = () => {
     return (
       <Layout>
         <div className="text-white text-center mt-32">Loading plans...</div>
+      </Layout>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Layout>
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-6xl mx-auto px-6 min-h-[calc(100vh-200px)]">
+          <div className="text-center space-y-8 w-full">
+            <h1 className="text-5xl font-bold text-white mb-6">{t('editPlans.title')}</h1>
+            
+            <div className="bg-white/10 backdrop-blur-md border border-red-500/20 rounded-xl p-8 w-full max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-6xl mb-4">❌</div>
+                <h3 className="text-xl font-semibold text-white mb-3">Error Loading Plans</h3>
+                <p className="text-white/70 mb-6">{error}</p>
+                <div className="space-y-3">
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                    onClick={() => {
+                      setError(null);
+                      setLoading(true);
+                      // Trigger a refetch by re-mounting the component
+                      window.location.reload();
+                    }}
+                  >
+                    Retry
+                  </Button>
+                  <div>
+                    <Button
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={() => navigate('/create-plan')}
+                    >
+                      Create New Plan Instead
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </Layout>
     );
   }
