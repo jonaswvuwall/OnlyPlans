@@ -49,6 +49,147 @@ interface NetworkActivity extends PlanActivity {
   isCritical: boolean;             // On critical path
 }
 
+// Enhanced positioning algorithm for cleaner network visualization
+const calculateOptimalPositions = (activities: NetworkActivity[]): Map<string, NodePosition> => {
+  const positions = new Map<string, NodePosition>();
+  
+  // Find critical path activities for special handling
+  const criticalActivities = activities.filter(a => a.isCritical);
+  const criticalIds = new Set(criticalActivities.map(a => a.id));
+  
+  // Step 1: Calculate levels (depth from start)
+  const activityLevels = new Map<string, number>();
+  
+  // Helper function to calculate the level of an activity
+  const calculateLevel = (activity: NetworkActivity): number => {
+    if (activityLevels.has(activity.id)) {
+      return activityLevels.get(activity.id)!;
+    }
+    
+    if (activity.predecessors.length === 0) {
+      activityLevels.set(activity.id, 0);
+      return 0;
+    }
+    
+    let maxPredLevel = -1;
+    for (const predRef of activity.predecessors) {
+      const predActivity = activities.find(a => a.referenceNumber === predRef);
+      if (predActivity) {
+        const predLevel = calculateLevel(predActivity);
+        maxPredLevel = Math.max(maxPredLevel, predLevel);
+      }
+    }
+    
+    const level = maxPredLevel + 1;
+    activityLevels.set(activity.id, level);
+    return level;
+  };
+  
+  // Calculate levels for all activities
+  activities.forEach(activity => calculateLevel(activity));
+  
+  // Group activities by level
+  const activitiesByLevel = new Map<number, NetworkActivity[]>();
+  activities.forEach(activity => {
+    const level = activityLevels.get(activity.id)!;
+    if (!activitiesByLevel.has(level)) {
+      activitiesByLevel.set(level, []);
+    }
+    activitiesByLevel.get(level)!.push(activity);
+  });
+  
+  // Sort levels
+  const sortedLevels = Array.from(activitiesByLevel.keys()).sort((a, b) => a - b);
+  
+  // Layout parameters for a more professional, compact design
+  const LEVEL_SPACING = 350; // Horizontal spacing between levels
+  const NODE_SPACING = 220; // Increased vertical spacing for taller nodes
+  const START_X = 140;
+  const START_Y = 120;
+  
+  // Position activities level by level
+  sortedLevels.forEach((level) => {
+    const activitiesInLevel = activitiesByLevel.get(level)!;
+    
+    // Sort activities in level: critical path activities first, then by earliest start time
+    activitiesInLevel.sort((a, b) => {
+      if (criticalIds.has(a.id) && !criticalIds.has(b.id)) return -1;
+      if (!criticalIds.has(a.id) && criticalIds.has(b.id)) return 1;
+      return a.faz - b.faz;
+    });
+    
+    const x = START_X + level * LEVEL_SPACING;
+    
+    // Calculate vertical positions to minimize crossings
+    activitiesInLevel.forEach((activity, index) => {
+      let y = START_Y + index * NODE_SPACING;
+      
+      // For non-critical activities, try to position them to minimize crossings
+      if (!criticalIds.has(activity.id) && activity.predecessors.length > 0) {
+        // Calculate average Y position of predecessors
+        let predYSum = 0;
+        let predCount = 0;
+        
+        activity.predecessors.forEach(predRef => {
+          const predActivity = activities.find(a => a.referenceNumber === predRef);
+          if (predActivity) {
+            const predPos = positions.get(predActivity.id);
+            if (predPos) {
+              predYSum += predPos.y;
+              predCount++;
+            }
+          }
+        });
+        
+        if (predCount > 0) {
+          const avgPredY = predYSum / predCount;
+          // Try to position near predecessor average, but maintain some spacing
+          y = Math.max(y, avgPredY - 50);
+        }
+      }
+      
+      positions.set(activity.id, { x, y });
+    });
+  });
+  
+  // Post-process: Adjust positions to reduce overlaps
+  const adjustForOverlaps = () => {
+    const positionsArray = Array.from(positions.entries());
+    let adjusted = false;
+    
+    for (let i = 0; i < positionsArray.length; i++) {
+      for (let j = i + 1; j < positionsArray.length; j++) {
+        const [, pos1] = positionsArray[i];
+        const [, pos2] = positionsArray[j];
+        
+        // Check if nodes are too close (same level)
+        if (Math.abs(pos1.x - pos2.x) < 80 && Math.abs(pos1.y - pos2.y) < 240) {
+          if (pos1.y < pos2.y) {
+            pos2.y = pos1.y + 260;
+          } else {
+            pos1.y = pos2.y + 260;
+          }
+          adjusted = true;
+        }
+      }
+    }
+    
+    if (adjusted) {
+      positionsArray.forEach(([id, pos]) => positions.set(id, pos));
+    }
+    
+    return adjusted;
+  };
+  
+  // Apply overlap adjustment (may need multiple passes)
+  let adjustmentPasses = 0;
+  while (adjustForOverlaps() && adjustmentPasses < 3) {
+    adjustmentPasses++;
+  }
+  
+  return positions;
+};
+
 // Position interface for draggable nodes
 interface NodePosition {
   x: number;
@@ -153,14 +294,8 @@ const Visualization: FC = () => {
         const calculatedActivities = calculateNetworkPlan(networkPlanData.activities);
         setNetworkActivities(calculatedActivities);
         
-        // Initialize node positions with grid layout
-        const positions = new Map<string, NodePosition>();
-        calculatedActivities.forEach((activity, index) => {
-          const spacing = 300;
-          const x = 150 + (index % 4) * spacing;
-          const y = 150 + Math.floor(index / 4) * 280;
-          positions.set(activity.id, { x, y });
-        });
+        // Enhanced positioning algorithm for better visualization
+        const positions = calculateOptimalPositions(calculatedActivities);
         setNodePositions(positions);
       } catch (error: unknown) {
         console.error('Error fetching plan data:', error);
@@ -245,12 +380,22 @@ const Visualization: FC = () => {
       y: dragState.startPos.y + deltaY
     };
 
-    // Constrain to viewbox bounds
-    const nodeSize = 200;
-    const maxX = 1600 - nodeSize/2;
-    const maxY = 800 - nodeSize/2;
-    newPos.x = Math.max(nodeSize/2, Math.min(maxX, newPos.x));
-    newPos.y = Math.max(nodeSize/2, Math.min(maxY, newPos.y));
+    // Constrain to viewbox bounds - use dynamic SVG dimensions
+    const nodeWidth = 280;
+    const nodeHeight = 200;
+    
+    // Calculate SVG dimensions based on actual layout
+    const levels = new Set(Array.from(nodePositions.values()).map(pos => Math.round(pos.x / 350)));
+    const maxLevel = levels.size > 0 ? Math.max(...levels) : 0;
+    const svgWidth = Math.max(1600, 140 + (maxLevel * 350) + 280 + 100);
+    
+    const maxY = nodePositions.size > 0 ? Math.max(...Array.from(nodePositions.values()).map(pos => pos.y)) : 0;
+    const svgHeight = Math.max(1000, maxY + 200 + 100);
+    
+    const maxX = svgWidth - nodeWidth/2;
+    const maxYConstraint = svgHeight - nodeHeight/2;
+    newPos.x = Math.max(nodeWidth/2, Math.min(maxX, newPos.x));
+    newPos.y = Math.max(nodeHeight/2, Math.min(maxYConstraint, newPos.y));
 
     setNodePositions(prev => new Map(prev.set(dragState.draggedNodeId!, newPos)));
   };
@@ -440,10 +585,10 @@ const Visualization: FC = () => {
     return networkActivities.sort((a, b) => a.referenceNumber - b.referenceNumber);
   };
 
-  // Render network node
   // Render network node according to German BWL standards
   const renderNetworkNode = (activity: NetworkActivity, index: number) => {
-    const nodeSize = 200;
+    const nodeWidth = 280;  // Wider nodes for better readability
+    const nodeHeight = 200; // Increased height for better spacing
     const position = getNodePosition(activity, index);
     const isDragging = dragState.draggedNodeId === activity.id;
 
@@ -454,22 +599,13 @@ const Visualization: FC = () => {
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         onMouseDown={(e) => handleMouseDown(e, activity.id)}
       >
-        {/* Enhanced shadow with multiple layers */}
+        {/* Modern shadow */}
         <rect
-          x={-nodeSize/2 + 6}
-          y={-nodeSize/2 + 6}
-          width={nodeSize}
-          height={nodeSize}
-          fill="rgba(0, 0, 0, 0.3)"
-          rx="12"
-          opacity="0.8"
-        />
-        <rect
-          x={-nodeSize/2 + 3}
-          y={-nodeSize/2 + 3}
-          width={nodeSize}
-          height={nodeSize}
-          fill="rgba(0, 0, 0, 0.2)"
+          x={-nodeWidth/2 + 4}
+          y={-nodeHeight/2 + 4}
+          width={nodeWidth}
+          height={nodeHeight}
+          fill="rgba(0, 0, 0, 0.15)"
           rx="12"
           opacity="0.6"
         />
@@ -479,296 +615,269 @@ const Visualization: FC = () => {
           <linearGradient id={`nodeGradient-${activity.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
             {activity.isCritical ? (
               <>
-                <stop offset="0%" stopColor="#fef2f2" />
-                <stop offset="50%" stopColor="#fee2e2" />
-                <stop offset="100%" stopColor="#fecaca" />
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="50%" stopColor="#fef2f2" />
+                <stop offset="100%" stopColor="#fee2e2" />
               </>
             ) : (
               <>
-                <stop offset="0%" stopColor="#f8fafc" />
-                <stop offset="50%" stopColor="#f1f5f9" />
-                <stop offset="100%" stopColor="#e2e8f0" />
-              </>
-            )}
-          </linearGradient>
-          <linearGradient id={`borderGradient-${activity.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            {activity.isCritical ? (
-              <>
-                <stop offset="0%" stopColor="#dc2626" />
-                <stop offset="50%" stopColor="#ef4444" />
-                <stop offset="100%" stopColor="#f87171" />
-              </>
-            ) : (
-              <>
-                <stop offset="0%" stopColor="#475569" />
-                <stop offset="50%" stopColor="#64748b" />
-                <stop offset="100%" stopColor="#94a3b8" />
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="50%" stopColor="#f8fafc" />
+                <stop offset="100%" stopColor="#f1f5f9" />
               </>
             )}
           </linearGradient>
         </defs>
         
-        {/* Main node rectangle with enhanced styling */}
+        {/* Main node rectangle */}
         <rect
-          x={-nodeSize/2}
-          y={-nodeSize/2}
-          width={nodeSize}
-          height={nodeSize}
+          x={-nodeWidth/2}
+          y={-nodeHeight/2}
+          width={nodeWidth}
+          height={nodeHeight}
           fill={`url(#nodeGradient-${activity.id})`}
-          stroke={`url(#borderGradient-${activity.id})`}
+          stroke={activity.isCritical ? "#dc2626" : "#64748b"}
           strokeWidth={activity.isCritical ? "3" : "2"}
           rx="12"
-          filter="drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))"
+          filter="drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))"
         />
         
-        {/* Inner glow effect */}
+        {/* Header section with reference number and duration */}
         <rect
-          x={-nodeSize/2 + 2}
-          y={-nodeSize/2 + 2}
-          width={nodeSize - 4}
-          height={nodeSize - 4}
-          fill="none"
+          x={-nodeWidth/2}
+          y={-nodeHeight/2}
+          width={nodeWidth}
+          height={40}
+          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+          rx="12"
+        />
+        <rect
+          x={-nodeWidth/2}
+          y={-nodeHeight/2 + 30}
+          width={nodeWidth}
+          height={10}
+          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+        />
+        
+        {/* Reference number */}
+        <circle
+          cx={-nodeWidth/2 + 30}
+          cy={-nodeHeight/2 + 20}
+          r="14"
+          fill="rgba(255, 255, 255, 0.2)"
           stroke="rgba(255, 255, 255, 0.5)"
           strokeWidth="1"
-          rx="10"
-          opacity="0.7"
-        />
-        
-        {/* Enhanced quadrant separators with subtle styling */}
-        <line
-          x1={-nodeSize/2 + 10}
-          y1={0}
-          x2={nodeSize/2 - 10}
-          y2={0}
-          stroke={activity.isCritical ? "#dc2626" : "#475569"}
-          strokeWidth="1.5"
-          opacity="0.8"
-        />
-        <line
-          x1={0}
-          y1={-nodeSize/2 + 10}
-          x2={0}
-          y2={nodeSize/2 - 10}
-          stroke={activity.isCritical ? "#dc2626" : "#475569"}
-          strokeWidth="1.5"
-          opacity="0.8"
-        />
-        
-        {/* Process Step circle with enhanced styling */}
-        <circle
-          cx={0}
-          cy={-nodeSize/2 + 20}
-          r="15"
-          fill={activity.isCritical ? "#dc2626" : "#475569"}
-          stroke="rgba(255, 255, 255, 0.8)"
-          strokeWidth="2"
         />
         <text
-          x={0}
-          y={-nodeSize/2 + 27}
+          x={-nodeWidth/2 + 30}
+          y={-nodeHeight/2 + 26}
           textAnchor="middle"
           fill="white"
-          fontSize="14"
+          fontSize="13"
           fontWeight="bold"
         >
           {activity.referenceNumber}
         </text>
         
-        {/* Duration badge with modern styling */}
+        {/* Duration badge */}
         <rect
-          x={-25}
-          y={-8}
-          width={50}
-          height={16}
-          fill={activity.isCritical ? "#dc2626" : "#475569"}
-          rx="8"
-          opacity="0.9"
+          x={nodeWidth/2 - 75}
+          y={-nodeHeight/2 + 10}
+          width={65}
+          height={20}
+          fill="rgba(255, 255, 255, 0.2)"
+          rx="10"
+          stroke="rgba(255, 255, 255, 0.3)"
+          strokeWidth="1"
         />
         <text
-          x={0}
-          y={3}
+          x={nodeWidth/2 - 42}
+          y={-nodeHeight/2 + 24}
           textAnchor="middle"
           fill="white"
-          fontSize="11"
+          fontSize="12"
           fontWeight="bold"
         >
           D={activity.duration}
         </text>
         
-        {/* Enhanced ES (top-left quadrant) - Earliest Start */}
+        {/* Subtle background rectangles for visual separation */}
+        {/* Top left quadrant background (ES) */}
         <rect
-          x={-nodeSize/2 + 5}
-          y={-nodeSize/2 + 35}
-          width={nodeSize/2 - 10}
-          height={nodeSize/2 - 15}
-          fill="rgba(255, 255, 255, 0.1)"
+          x={-nodeWidth/2 + 8}
+          y={-nodeHeight/2 + 52}
+          width={nodeWidth/2 - 16}
+          height={32}
+          fill="rgba(255, 255, 255, 0.05)"
           rx="6"
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth="0.5"
-        />
-        <text
-          x={-nodeSize/4}
-          y={-nodeSize/4 - 5}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#475569"}
-          fontSize="9"
-          fontWeight="600"
           opacity="0.8"
+        />
+        
+        {/* Top right quadrant background (EF) */}
+        <rect
+          x={8}
+          y={-nodeHeight/2 + 52}
+          width={nodeWidth/2 - 16}
+          height={32}
+          fill="rgba(255, 255, 255, 0.05)"
+          rx="6"
+          opacity="0.8"
+        />
+        
+        {/* Bottom left quadrant background (LS) */}
+        <rect
+          x={-nodeWidth/2 + 8}
+          y={-nodeHeight/2 + 124}
+          width={nodeWidth/2 - 16}
+          height={32}
+          fill="rgba(255, 255, 255, 0.05)"
+          rx="6"
+          opacity="0.8"
+        />
+        
+        {/* Bottom right quadrant background (LF) */}
+        <rect
+          x={8}
+          y={-nodeHeight/2 + 124}
+          width={nodeWidth/2 - 16}
+          height={32}
+          fill="rgba(255, 255, 255, 0.05)"
+          rx="6"
+          opacity="0.8"
+        />
+        
+        {/* ES (Earliest Start) - Top Left */}
+        <text
+          x={-nodeWidth/4}
+          y={-nodeHeight/2 + 58}
+          textAnchor="middle"
+          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+          fontSize="11"
+          fontWeight="600"
         >
           ES
         </text>
         <text
-          x={-nodeSize/4}
-          y={-nodeSize/4 + 12}
+          x={-nodeWidth/4}
+          y={-nodeHeight/2 + 74}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1e293b"}
-          fontSize="16"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="18"
           fontWeight="bold"
         >
           {activity.faz}
         </text>
         
-        {/* Enhanced EF (top-right quadrant) - Earliest Finish */}
-        <rect
-          x={5}
-          y={-nodeSize/2 + 35}
-          width={nodeSize/2 - 10}
-          height={nodeSize/2 - 15}
-          fill="rgba(255, 255, 255, 0.1)"
-          rx="6"
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth="0.5"
-        />
+        {/* EF (Earliest Finish) - Top Right */}
         <text
-          x={nodeSize/4}
-          y={-nodeSize/4 - 5}
+          x={nodeWidth/4}
+          y={-nodeHeight/2 + 58}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#475569"}
-          fontSize="9"
+          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+          fontSize="11"
           fontWeight="600"
-          opacity="0.8"
         >
           EF
         </text>
         <text
-          x={nodeSize/4}
-          y={-nodeSize/4 + 12}
+          x={nodeWidth/4}
+          y={-nodeHeight/2 + 74}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1e293b"}
-          fontSize="16"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="18"
           fontWeight="bold"
         >
           {activity.fez}
         </text>
         
-        {/* Enhanced LS (bottom-left quadrant) - Latest Start */}
+        {/* Beautiful Activity Name Section - Center Focus */}
         <rect
-          x={-nodeSize/2 + 5}
-          y={15}
-          width={nodeSize/2 - 10}
-          height={nodeSize/2 - 15}
-          fill="rgba(255, 255, 255, 0.1)"
-          rx="6"
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth="0.5"
+          x={-nodeWidth/2 + 15}
+          y={-nodeHeight/2 + 82}
+          width={nodeWidth - 30}
+          height={35}
+          fill="rgba(255, 255, 255, 0.95)"
+          rx="12"
+          stroke={activity.isCritical ? "#dc2626" : "#64748b"}
+          strokeWidth="2"
+          filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
         />
         <text
-          x={-nodeSize/4}
-          y={nodeSize/4 - 5}
+          x={0}
+          y={-nodeHeight/2 + 102}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#475569"}
-          fontSize="9"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="15"
+          fontWeight="800"
+          letterSpacing="0.3px"
+        >
+          {activity.activityName.length > 26 ? activity.activityName.substring(0, 26) + '...' : activity.activityName}
+        </text>
+        
+        {/* LS (Latest Start) - Bottom Left */}
+        <text
+          x={-nodeWidth/4}
+          y={-nodeHeight/2 + 130}
+          textAnchor="middle"
+          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+          fontSize="11"
           fontWeight="600"
-          opacity="0.8"
         >
           LS
         </text>
         <text
-          x={-nodeSize/4}
-          y={nodeSize/4 + 12}
+          x={-nodeWidth/4}
+          y={-nodeHeight/2 + 146}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1e293b"}
-          fontSize="16"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="18"
           fontWeight="bold"
         >
           {activity.saz}
         </text>
         
-        {/* Enhanced LF (bottom-right quadrant) - Latest Finish */}
-        <rect
-          x={5}
-          y={15}
-          width={nodeSize/2 - 10}
-          height={nodeSize/2 - 15}
-          fill="rgba(255, 255, 255, 0.1)"
-          rx="6"
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth="0.5"
-        />
+        {/* LF (Latest Finish) - Bottom Right */}
         <text
-          x={nodeSize/4}
-          y={nodeSize/4 - 5}
+          x={nodeWidth/4}
+          y={-nodeHeight/2 + 130}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#475569"}
-          fontSize="9"
+          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+          fontSize="11"
           fontWeight="600"
-          opacity="0.8"
         >
           LF
         </text>
         <text
-          x={nodeSize/4}
-          y={nodeSize/4 + 12}
+          x={nodeWidth/4}
+          y={-nodeHeight/2 + 146}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1e293b"}
-          fontSize="16"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="18"
           fontWeight="bold"
         >
           {activity.sez}
         </text>
         
-        {/* Enhanced Activity name below the node */}
+        {/* Buffer Information (Bottom Section) */}
         <rect
-          x={-nodeSize/2 + 10}
-          y={nodeSize/2 + 15}
-          width={nodeSize - 20}
-          height={20}
-          fill={activity.isCritical ? "rgba(220, 38, 38, 0.1)" : "rgba(71, 85, 105, 0.1)"}
-          rx="10"
-          stroke={activity.isCritical ? "rgba(220, 38, 38, 0.3)" : "rgba(71, 85, 105, 0.3)"}
+          x={-nodeWidth/2 + 15}
+          y={-nodeHeight/2 + 170}
+          width={nodeWidth - 30}
+          height={25}
+          fill={activity.totalFloat === 0 ? "rgba(220, 38, 38, 0.1)" : "rgba(34, 197, 94, 0.1)"}
+          rx="8"
+          stroke={activity.totalFloat === 0 ? "rgba(220, 38, 38, 0.3)" : "rgba(34, 197, 94, 0.3)"}
           strokeWidth="1"
         />
         <text
           x={0}
-          y={nodeSize/2 + 29}
+          y={-nodeHeight/2 + 187}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1e293b"}
-          fontSize="11"
+          fill={activity.totalFloat === 0 ? "#dc2626" : "#059669"}
+          fontSize="12"
           fontWeight="600"
         >
-          {activity.activityName.length > 18 ? activity.activityName.substring(0, 18) + '...' : activity.activityName}
-        </text>
-        
-        {/* Enhanced Buffer information */}
-        <rect
-          x={-nodeSize/2 + 20}
-          y={nodeSize/2 + 40}
-          width={nodeSize - 40}
-          height={16}
-          fill={activity.totalFloat === 0 ? "rgba(220, 38, 38, 0.2)" : "rgba(34, 197, 94, 0.2)"}
-          rx="8"
-          stroke={activity.totalFloat === 0 ? "rgba(220, 38, 38, 0.4)" : "rgba(34, 197, 94, 0.4)"}
-          strokeWidth="1"
-        />
-        <text
-          x={0}
-          y={nodeSize/2 + 52}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
-          fontSize="9"
-          fontWeight="500"
-        >
-          TF: {activity.totalFloat} | FF: {activity.freeFloat}
+          Total Float: {activity.totalFloat} | Free Float: {activity.freeFloat}
         </text>
       </g>
     );
@@ -776,7 +885,7 @@ const Visualization: FC = () => {
 
   // Render connections between nodes
   const renderConnections = () => {
-    const nodeSize = 200;
+    const nodeWidth = 280;
     
     const connections: React.ReactElement[] = [];
     
@@ -794,9 +903,9 @@ const Visualization: FC = () => {
         const endPos = getNodePosition(activity, index);
         
         // Calculate connection points (edge of nodes)
-        const startX = startPos.x + nodeSize/2;
+        const startX = startPos.x + nodeWidth/2;
         const startY = startPos.y;
-        const endX = endPos.x - nodeSize/2;
+        const endX = endPos.x - nodeWidth/2;
         const endY = endPos.y;
         
         const predecessor = networkActivities[predIndex];
@@ -821,10 +930,11 @@ const Visualization: FC = () => {
               y1={startY}
               x2={endX}
               y2={endY}
-              stroke={isCriticalPath ? "#dc2626" : "#8b5cf6"}
-              strokeWidth={isCriticalPath ? "4" : "3"}
+              stroke={isCriticalPath ? "#dc2626" : "#64748b"}
+              strokeWidth={isCriticalPath ? "2.5" : "1.5"}
               markerEnd={`url(#arrowhead-${isCriticalPath ? 'critical' : 'normal'})`}
-              opacity={isCriticalPath ? "1" : "0.8"}
+              opacity={isCriticalPath ? "0.9" : "0.7"}
+              strokeDasharray={isCriticalPath ? "none" : "none"}
             />
           </g>
         );
@@ -1030,8 +1140,17 @@ const Visualization: FC = () => {
                 {/* Network Plan SVG */}
                 <div className="overflow-x-auto bg-white/5 rounded-xl p-8 border border-white/10 w-full">
                   <svg 
-                    width={Math.max(1600, (networkActivities.length % 4) * 300 + 600)} 
-                    height={Math.max(800, Math.ceil(networkActivities.length / 4) * 280 + 400)}
+                    width={Math.max(1600, (() => {
+                      // Calculate proper width based on actual levels
+                      const levels = new Set(Array.from(nodePositions.values()).map(pos => Math.round(pos.x / 350)));
+                      const maxLevel = levels.size > 0 ? Math.max(...levels) : 0;
+                      return 140 + (maxLevel * 350) + 280 + 100; // START_X + levels * LEVEL_SPACING + nodeWidth + padding
+                    })())} 
+                    height={Math.max(1000, (() => {
+                      // Calculate proper height based on actual positions
+                      const maxY = nodePositions.size > 0 ? Math.max(...Array.from(nodePositions.values()).map(pos => pos.y)) : 0;
+                      return maxY + 200 + 100; // maxY + nodeHeight + padding
+                    })())}
                     className="mx-auto"
                     style={{ background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, rgba(0, 0, 0, 0.1) 70%)' }}
                     onMouseMove={handleMouseMove}
@@ -1043,29 +1162,29 @@ const Visualization: FC = () => {
                       {/* Critical path arrow */}
                       <marker
                         id="arrowhead-critical"
-                        markerWidth="16"
-                        markerHeight="12"
-                        refX="15"
-                        refY="6"
+                        markerWidth="8"
+                        markerHeight="6"
+                        refX="7"
+                        refY="3"
                         orient="auto"
                       >
                         <polygon
-                          points="0 0, 16 6, 0 12"
+                          points="0 0, 8 3, 0 6"
                           fill="#dc2626"
                         />
                       </marker>
                       {/* Normal arrow */}
                       <marker
                         id="arrowhead-normal"
-                        markerWidth="16"
-                        markerHeight="12"
-                        refX="15"
-                        refY="6"
+                        markerWidth="6"
+                        markerHeight="4"
+                        refX="5"
+                        refY="2"
                         orient="auto"
                       >
                         <polygon
-                          points="0 0, 16 6, 0 12"
-                          fill="#8b5cf6"
+                          points="0 0, 6 2, 0 4"
+                          fill="#64748b"
                         />
                       </marker>
                     </defs>
