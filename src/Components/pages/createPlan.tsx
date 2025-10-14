@@ -46,6 +46,7 @@ const CreatePlan: FC = () => {
     setActivities(updated);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
     setActivities(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
