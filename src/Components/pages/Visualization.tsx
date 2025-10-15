@@ -9,6 +9,7 @@ import { saveAs } from 'file-saver';
 import { Download } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import axios from 'axios';
+import { API_BASE } from '../../config/api';
 
 // Define the structure for a backend plan
 interface BackendPlan {
@@ -244,7 +245,7 @@ const Visualization: FC = () => {
         
         // Test if backend is reachable first by trying to get all plans
         console.log('Testing backend connection...');
-        const testResponse = await axios.get('http://localhost:4000/netzplaene');
+        const testResponse = await axios.get(`${API_BASE}/netzplaene`);
         console.log('Backend is reachable. Available plans:', testResponse.data);
         
         // Find the specific plan
@@ -256,7 +257,7 @@ const Visualization: FC = () => {
         
         // Fetch activities for this plan
         console.log('Fetching activities...');
-        const activitiesResponse = await axios.get(`http://localhost:4000/netzplaene/${planId}/aktivitaeten`);
+        const activitiesResponse = await axios.get(`${API_BASE}/netzplaene/${planId}/aktivitaeten`);
         console.log('Activities response received:', activitiesResponse);
         console.log('Activities data:', activitiesResponse.data);
         const activities = activitiesResponse.data;
@@ -309,7 +310,7 @@ const Visualization: FC = () => {
         let errorMessage = 'Unknown error occurred';
         
         if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_NETWORK') {
-          errorMessage = 'Cannot connect to backend server. Please make sure the server is running on http://localhost:4000';
+          errorMessage = `Cannot connect to backend server. Please make sure the server is running on ${API_BASE}`;
         } else if (error && typeof error === 'object' && 'response' in error) {
           // Server responded with error status
           const axiosError = error as { response?: { status?: number; data?: { error?: string }; statusText?: string } };
@@ -320,7 +321,7 @@ const Visualization: FC = () => {
           }
         } else if (error && typeof error === 'object' && 'request' in error) {
           // Request was made but no response received
-          errorMessage = 'No response from server. Check if backend is running on http://localhost:4000';
+          errorMessage = `No response from server. Check if backend is running on ${API_BASE}`;
         } else if (error instanceof Error) {
           errorMessage = error.message;
         }
