@@ -212,6 +212,7 @@ const Visualization: FC = () => {
   const { planId } = useParams<{ planId: string }>();
   const { t } = useTranslation();
   const visualizationRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null); // Separate ref for export content
   const [networkActivities, setNetworkActivities] = useState<NetworkActivity[]>([]);
   const [planData, setPlanData] = useState<NetworkPlanData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -416,37 +417,95 @@ const Visualization: FC = () => {
 
   // Export functions
   const handleExport = async (format: 'png' | 'jpg' | 'pdf') => {
-    if (!visualizationRef.current || !planData) return;
+    console.log('Starting export process for format:', format);
+    
+    if (!exportRef.current || !planData) {
+      console.error('Missing export ref or plan data');
+      return;
+    }
+    
+    console.log('Export element:', exportRef.current);
+    console.log('Element dimensions:', {
+      width: exportRef.current.scrollWidth,
+      height: exportRef.current.scrollHeight,
+      clientWidth: exportRef.current.clientWidth,
+      clientHeight: exportRef.current.clientHeight
+    });
     
     setIsExporting(true);
     setShowExportMenu(false);
     
     try {
-      const canvas = await html2canvas(visualizationRef.current, {
+      // Better configuration for SVG rendering
+      const canvas = await html2canvas(exportRef.current, {
         backgroundColor: '#1e1b4b',
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        height: visualizationRef.current.scrollHeight,
-        width: visualizationRef.current.scrollWidth
+        foreignObjectRendering: true,
+        logging: true, // Enable logging for debugging
+        height: exportRef.current.scrollHeight,
+        width: exportRef.current.scrollWidth,
+        onclone: (clonedDoc) => {
+          console.log('Cloning document for html2canvas');
+          // Ensure all SVG elements are properly styled in the clone
+          const clonedElement = clonedDoc.querySelector('.export-container') as HTMLElement;
+          if (clonedElement) {
+            clonedElement.style.transform = 'none';
+            clonedElement.style.position = 'static';
+          }
+        }
       });
+      
+      console.log('Canvas generated:', {
+        width: canvas.width,
+        height: canvas.height,
+        canvas: canvas
+      });
+      
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error('Failed to generate canvas from visualization');
+      }
       
       switch (format) {
         case 'png': {
           canvas.toBlob((blob) => {
             if (blob) {
               saveAs(blob, `${planData.planName}_network_plan.png`);
+            } else {
+              throw new Error('Failed to create PNG blob');
             }
           });
           break;
         }
           
         case 'jpg': {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              saveAs(blob, `${planData.planName}_network_plan.jpg`);
-            }
-          }, 'image/jpeg', 0.95);
+          // For JPG, we need to handle the background properly since JPG doesn't support transparency
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          
+          if (tempCtx) {
+            // Fill with solid background color (JPG doesn't support transparency)
+            tempCtx.fillStyle = '#1e1b4b';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // Draw the original canvas on top
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            tempCanvas.toBlob((blob) => {
+              if (blob) {
+                saveAs(blob, `${planData.planName}_network_plan.jpg`);
+                console.log('JPG export successful');
+              } else {
+                throw new Error('Failed to create JPG blob');
+              }
+            }, 'image/jpeg', 0.95);
+          } else {
+            throw new Error('Failed to create temporary canvas context for JPG');
+          }
           break;
         }
           
@@ -480,8 +539,52 @@ const Visualization: FC = () => {
       }
     } catch (error) {
       console.error(`Error exporting as ${format.toUpperCase()}:`, error);
+      
+      // Try alternative method for SVG-heavy content
+      try {
+        console.log('Trying alternative export method...');
+        const svgElement = exportRef.current?.querySelector('svg');
+        
+        if (svgElement && format === 'png') {
+          // Alternative method using SVG serialization
+          const svgData = new XMLSerializer().serializeToString(svgElement);
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          
+          canvas.width = svgElement.clientWidth * 2;
+          canvas.height = svgElement.clientHeight * 2;
+          
+          if (ctx) {
+            ctx.scale(2, 2);
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          
+          const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(svgBlob);
+          
+          img.onload = function() {
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  saveAs(blob, `${planData.planName}_network_plan.png`);
+                }
+              });
+            }
+            URL.revokeObjectURL(url);
+          };
+          
+          img.src = url;
+          return;
+        }
+      } catch (fallbackError) {
+        console.error('Fallback export method also failed:', fallbackError);
+      }
+      
       const errorKey = `visualization.exportErrors.${format}Failed`;
-      alert(t(errorKey));
+      alert(t(errorKey) || `Export als ${format.toUpperCase()} fehlgeschlagen. Bitte versuchen Sie es erneut.`);
     } finally {
       setIsExporting(false);
     }
@@ -751,7 +854,7 @@ const Visualization: FC = () => {
           opacity="0.8"
         />
         
-        {/* ES (Earliest Start) - Top Left */}
+        {/* FAZ (Frühester Anfang) - Top Left */}
         <text
           x={-nodeWidth/4}
           y={-nodeHeight/2 + 46}
@@ -759,7 +862,7 @@ const Visualization: FC = () => {
           fill={activity.isCritical ? "#dc2626" : "#64748b"}
           fontSize="9"
           fontWeight="600"
-        >ἤ{t('visualization.networkPlan.es')}</text>
+        >{t('visualization.networkPlan.es')}</text>
         <text
           x={-nodeWidth/4}
           y={-nodeHeight/2 + 60}
@@ -1121,6 +1224,146 @@ const Visualization: FC = () => {
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                     <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-green-700 rounded shadow-lg"></div>
                     <span className="text-white font-medium">{t('visualization.legend.bufferGreaterZero')}</span>
+                  </div>
+                </div>
+
+                {/* Export Container - Only for export */}
+                <div ref={exportRef} className="export-container" style={{ 
+                  padding: '20px', 
+                  backgroundColor: '#1e1b4b',
+                  position: 'absolute',
+                  left: '-9999px',
+                  top: '-9999px',
+                  visibility: isExporting ? 'visible' : 'hidden'
+                }}>
+                  {/* Plan Title and Description for Export */}
+                  <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold text-white mb-4">{planData.planName}</h1>
+                    <p className="text-lg text-white/80 mb-6">{planData.planDescription}</p>
+                    
+                    {/* Legend for Export */}
+                    <div className="flex justify-center gap-6 mb-8 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded"></div>
+                        <span className="text-white font-medium">{t('visualization.legend.criticalPath')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-gradient-to-br from-purple-500 to-purple-700 rounded"></div>
+                        <span className="text-white font-medium">{t('visualization.legend.normalActivity')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-green-700 rounded"></div>
+                        <span className="text-white font-medium">{t('visualization.legend.bufferGreaterZero')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Network Plan SVG for Export */}
+                  <div className="flex justify-center">
+                    <svg 
+                      width={Math.max(1200, (() => {
+                        const levels = new Set(Array.from(nodePositions.values()).map(pos => Math.round(pos.x / LEVEL_SPACING)));
+                        const maxLevel = levels.size > 0 ? Math.max(...levels) : 0;
+                        return START_X + (maxLevel * LEVEL_SPACING) + NODE_WIDTH + 100;
+                      })())} 
+                      height={Math.max(700, (() => {
+                        const maxY = nodePositions.size > 0 ? Math.max(...Array.from(nodePositions.values()).map(pos => pos.y)) : 0;
+                        return maxY + NODE_HEIGHT + 100;
+                      })())}
+                      style={{ background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, rgba(0, 0, 0, 0.1) 70%)' }}
+                    >
+                      {/* Arrow marker definitions */}
+                      <defs>
+                        {/* Critical path arrow */}
+                        <marker
+                          id="arrowhead-critical-export"
+                          markerWidth="8"
+                          markerHeight="6"
+                          refX="7"
+                          refY="3"
+                          orient="auto"
+                        >
+                          <polygon
+                            points="0 0, 8 3, 0 6"
+                            fill="#dc2626"
+                          />
+                        </marker>
+                        {/* Normal arrow */}
+                        <marker
+                          id="arrowhead-normal-export"
+                          markerWidth="6"
+                          markerHeight="4"
+                          refX="5"
+                          refY="2"
+                          orient="auto"
+                        >
+                          <polygon
+                            points="0 0, 6 2, 0 4"
+                            fill="#64748b"
+                          />
+                        </marker>
+                      </defs>
+                      
+                      {/* Render connections first (so they appear behind nodes) */}
+                      {networkActivities.map((activity, index) => {
+                        const connections: React.ReactElement[] = [];
+                        
+                        activity.predecessors.forEach(predId => {
+                          const predIndex = networkActivities.findIndex(a => a.referenceNumber === predId);
+                          
+                          if (predIndex === -1) {
+                            return;
+                          }
+                          
+                          // Get dynamic positions
+                          const predecessorActivity = networkActivities[predIndex];
+                          const startPos = getNodePosition(predecessorActivity, predIndex);
+                          const endPos = getNodePosition(activity, index);
+                          
+                          // Calculate connection points (edge of nodes)
+                          const nodeWidth = NODE_WIDTH;
+                          const startX = startPos.x + nodeWidth/2;
+                          const startY = startPos.y;
+                          const endX = endPos.x - nodeWidth/2;
+                          const endY = endPos.y;
+                          
+                          const predecessor = networkActivities[predIndex];
+                          const isCriticalPath = activity.isCritical && predecessor.isCritical;
+                          
+                          connections.push(
+                            <g key={`${predId}-${activity.referenceNumber}`}>
+                              {/* Connection line with glow effect for critical path */}
+                              {isCriticalPath && (
+                                <line
+                                  x1={startX}
+                                  y1={startY}
+                                  x2={endX}
+                                  y2={endY}
+                                  stroke="#dc2626"
+                                  strokeWidth="8"
+                                  opacity="0.3"
+                                />
+                              )}
+                              <line
+                                x1={startX}
+                                y1={startY}
+                                x2={endX}
+                                y2={endY}
+                                stroke={isCriticalPath ? "#dc2626" : "#64748b"}
+                                strokeWidth={isCriticalPath ? "2.5" : "1.5"}
+                                markerEnd={`url(#arrowhead-${isCriticalPath ? 'critical' : 'normal'}-export)`}
+                                opacity={isCriticalPath ? "0.9" : "0.7"}
+                              />
+                            </g>
+                          );
+                        });
+                        
+                        return connections;
+                      })}
+                      
+                      {/* Render nodes */}
+                      {networkActivities.map((activity, index) => renderNetworkNode(activity, index))}
+                    </svg>
                   </div>
                 </div>
 
