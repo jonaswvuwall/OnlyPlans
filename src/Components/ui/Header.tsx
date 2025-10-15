@@ -27,7 +27,7 @@ const Header: FC = () => {
       textColor: '#ffffff',
       links: [
         { label: t('header.documentation'), href: 'https://github.com/jonaswvuwall/OnlyPlans/wiki', ariaLabel: t('header.documentationAria') },
-        { label: t('header.support'), href: '/https://www.support.com/', ariaLabel: t('header.supportAria') }
+        { label: t('header.support'), href: '/support', ariaLabel: t('header.supportAria') }
       ]
     },
     {

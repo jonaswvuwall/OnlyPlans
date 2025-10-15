@@ -11,6 +11,7 @@ import CreatePlan from './Components/pages/createPlan'
 import EditPlans from './Components/pages/editPlan'
 import Visualization from './Components/pages/Visualization'
 import ManagePlans from './Components/pages/managePlans'
+import Support from './Components/pages/support'
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -51,6 +52,11 @@ function AnimatedRoutes() {
         <Route path="/visualization/:planId" element={
           <PageTransition>
             <Visualization />
+          </PageTransition>
+        } />
+        <Route path="/support" element={
+          <PageTransition>
+            <Support />
           </PageTransition>
         } />
       </Routes>
