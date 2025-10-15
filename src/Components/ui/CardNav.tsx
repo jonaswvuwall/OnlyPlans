@@ -4,7 +4,6 @@ import { gsap } from 'gsap';
 // use your own icon import if react-icons is not available
 import { GoArrowUpRight } from 'react-icons/go';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Globe } from 'lucide-react';
 
 type CardNavLink = {
   label: string;
@@ -44,7 +43,7 @@ const CardNav: React.FC<CardNavProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t, language, setLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const navRef = useRef<HTMLDivElement | null>(null);
@@ -62,11 +61,6 @@ const CardNav: React.FC<CardNavProps> = ({
 
   const handleLandingClick = () => {
     navigate('/home');
-  };
-
-  const toggleLanguage = () => {
-    const newLanguage = language === 'en' ? 'de' : 'en';
-    setLanguage(newLanguage);
   };
 
   const calculateHeight = () => {
@@ -231,18 +225,6 @@ const CardNav: React.FC<CardNavProps> = ({
                   </svg>
                 </button>
               )}
-              
-              {/* Language Switcher Button - now positioned second */}
-              <button
-                onClick={toggleLanguage}
-                className="card-nav-cta-button inline-flex items-center justify-center border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-[44px] font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-                title={language === 'en' ? t('navigation.switchToGerman') : t('navigation.switchToEnglish')}
-                aria-label={t('navigation.languageSwitcherAria')}
-              >
-                <Globe size={14} />
-                <span className="text-xs font-medium ml-1">{language.toUpperCase()}</span>
-              </button>
               
               <button
                 type="button"

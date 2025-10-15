@@ -1,10 +1,9 @@
 import React, { createContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import enTranslations from '../translations/en.json';
 import deTranslations from '../translations/de.json';
 
 // Define available languages
-export type Language = 'en' | 'de';
+export type Language = 'de';
 
 // Translation context type
 interface TranslationContextType {
@@ -22,15 +21,8 @@ interface TranslationData {
 }
 
 // Load translation data synchronously
-const getTranslations = (lang: Language): TranslationData => {
-  switch (lang) {
-    case 'en':
-      return enTranslations;
-    case 'de':
-      return deTranslations;
-    default:
-      return enTranslations;
-  }
+const getTranslations = (): TranslationData => {
+  return deTranslations;
 };
 
 // Get nested value from object using dot notation
@@ -43,34 +35,28 @@ const getNestedValue = (obj: TranslationData, path: string): string => {
 // Provider component props
 interface TranslationProviderProps {
   children: ReactNode;
-  defaultLanguage?: Language;
 }
 
 // Translation provider component
 export const TranslationProvider: React.FC<TranslationProviderProps> = ({ 
-  children, 
-  defaultLanguage = 'en' 
+  children
 }) => {
-  const [language, setLanguage] = useState<Language>(() => {
-    // Get language from localStorage or use default
-    const saved = localStorage.getItem('app-language') as Language;
-    return saved && ['en', 'de'].includes(saved) ? saved : defaultLanguage;
-  });
+  const [language, setLanguage] = useState<Language>('de');
   
   const [translations, setTranslations] = useState<TranslationData>(() => {
-    // Initialize with translations for the default language
-    return getTranslations(language);
+    // Initialize with German translations
+    return getTranslations();
   });
 
-  // Load translations when language changes
+  // Load translations when language changes (always German now)
   useEffect(() => {
-    const translationData = getTranslations(language);
+    const translationData = getTranslations();
     setTranslations(translationData);
   }, [language]);
 
-  // Save language preference
+  // Save language preference (always German)
   useEffect(() => {
-    localStorage.setItem('app-language', language);
+    localStorage.setItem('app-language', 'de');
   }, [language]);
 
   // Translation function

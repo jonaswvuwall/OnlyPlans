@@ -24,10 +24,7 @@
     "goToLandingPage": "Zur Startseite",
     "createPlan": "Plan Erstellen",
     "operations": "Operationen",
-    "visualization": "Visualisierung",
-    "switchToGerman": "Zu Deutsch wechseln",
-    "switchToEnglish": "Zu Englisch wechseln",
-    "languageSwitcherAria": "Klicken um Sprache zu wechseln"
+    "visualization": "Visualisierung"
   },
   "landing": {
     "title": "Willkommen bei OnlyPlans",
