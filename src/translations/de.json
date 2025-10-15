@@ -220,6 +220,99 @@
   "footer": {
     "craftedBy": "Mit Leidenschaft erstellt von"
   },
+  "support": {
+    "title": "Premium Support Pakete",
+    "subtitle": "Wählen Sie das perfekte Support-Paket für Ihre exklusiven Bedürfnisse",
+    "packages": {
+      "basic": {
+        "name": "Goldener Standard",
+        "price": "€999",
+        "period": "/Monat",
+        "description": "Für anspruchsvolle Einsteiger",
+        "features": [
+          "24/7 Email Support*",
+          "Antwortzeit: 48-72h",
+          "1 Telefonsupport/Monat",
+          "Grundlegende Tutorials",
+          "Community Forum Zugang"
+        ],
+        "disclaimer": "*Nur an Werktagen"
+      },
+      "premium": {
+        "name": "Platin Elite",
+        "price": "€4.999",
+        "period": "/Monat",
+        "description": "Für wahre Profis",
+        "popular": true,
+        "features": [
+          "Persönlicher Support-Butler",
+          "Antwortzeit: 30 Minuten",
+          "Unlimited Telefonsupport",
+          "Exklusive Masterclass-Sessions",
+          "Priority Queue in allem",
+          "Persönliche WhatsApp-Nummer"
+        ]
+      },
+      "enterprise": {
+        "name": "Diamant Imperium",
+        "price": "€49.999",
+        "period": "/Monat",
+        "description": "Für absolute Leistungsträger",
+        "features": [
+          "Dedicated Support-Team (24 Personen)",
+          "Sofortige Antworten (unter 30 Sekunden)",
+          "Persönlicher Besuch vor Ort",
+          "Custom Software-Entwicklung",
+          "Lebenslanges VIP-Coaching",
+          "Direkter CEO-Kontakt",
+          "Goldene Visitenkarte",
+          "Yacht-Meeting verfügbar"
+        ]
+      }
+    },
+    "features": {
+      "satisfaction": {
+        "title": "100% Zufriedenheitsgarantie*",
+        "description": "*Bei Unzufriedenheit erhalten Sie 50% Ihrer ersten Zahlung zurück"
+      },
+      "experts": {
+        "title": "Zertifizierte Experten",
+        "description": "Unser Team hat über 3 Monate Erfahrung im Projektmanagement"
+      },
+      "availability": {
+        "title": "Premium Verfügbarkeit",
+        "description": "Support verfügbar 24/7/365 (außer an Feiertagen und Wochenenden)"
+      }
+    },
+    "cta": {
+      "selectPlan": "Plan Auswählen",
+      "contactSales": "Vertrieb Kontaktieren",
+      "startTrial": "Kostenlose 5-Minuten Testversion"
+    },
+    "testimonials": {
+      "title": "Was unsere Kunden sagen",
+      "reviews": [
+        {
+          "name": "Dr. Max Mustermann",
+          "company": "Mustermann GmbH",
+          "text": "Für nur €49.999 im Monat bekomme ich Support, der fast so gut ist wie Google! Unglaublich!",
+          "rating": 5
+        },
+        {
+          "name": "Anna Schmidt",
+          "company": "Schmidt Consulting",
+          "text": "Das Yacht-Meeting war der Höhepunkt meiner Karriere. Das Geld war es wert... glaube ich.",
+          "rating": 4
+        },
+        {
+          "name": "Peter Johnson",
+          "company": "Johnson Ltd.",
+          "text": "Ich habe zwar bankrott gemacht, aber der Support war exzellent!",
+          "rating": 5
+        }
+      ]
+    }
+  },
   "header": {
     "products": "Produkte",
     "planningTools": "Planungstools",
