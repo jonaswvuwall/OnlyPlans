@@ -106,6 +106,7 @@
       "ef": "FEZ",
       "ls": "SAZ",
       "lf": "SEZ",
+      "durationShort": "D",
       "earliestStart": "Frühester Anfang",
       "earliestFinish": "Frühestes Ende",
       "latestStart": "Spätester Anfang",
