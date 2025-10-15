@@ -703,7 +703,7 @@ const Visualization: FC = () => {
           fontSize="10"
           fontWeight="bold"
         >
-          D={activity.duration}
+          {t('visualization.networkPlan.durationShort')}={activity.duration}
         </text>
         
         {/* Subtle background rectangles for visual separation */}
@@ -759,7 +759,7 @@ const Visualization: FC = () => {
           fill={activity.isCritical ? "#dc2626" : "#64748b"}
           fontSize="9"
           fontWeight="600"
-        >ES</text>
+        >ἤ{t('visualization.networkPlan.es')}</text>
         <text
           x={-nodeWidth/4}
           y={-nodeHeight/2 + 60}
@@ -777,7 +777,7 @@ const Visualization: FC = () => {
           fill={activity.isCritical ? "#dc2626" : "#64748b"}
           fontSize="9"
           fontWeight="600"
-        >EF</text>
+        >{t('visualization.networkPlan.ef')}</text>
         <text
           x={nodeWidth/4}
           y={-nodeHeight/2 + 60}
@@ -819,7 +819,7 @@ const Visualization: FC = () => {
           fill={activity.isCritical ? "#dc2626" : "#64748b"}
           fontSize="9"
           fontWeight="600"
-        >LS</text>
+        >{t('visualization.networkPlan.ls')}</text>
         <text
           x={-nodeWidth/4}
           y={-nodeHeight/2 + 120}
@@ -837,7 +837,7 @@ const Visualization: FC = () => {
           fill={activity.isCritical ? "#dc2626" : "#64748b"}
           fontSize="9"
           fontWeight="600"
-        >LF</text>
+        >{t('visualization.networkPlan.lf')}</text>
         <text
           x={nodeWidth/4}
           y={-nodeHeight/2 + 120}
@@ -865,7 +865,7 @@ const Visualization: FC = () => {
           fill={activity.totalFloat === 0 ? "#dc2626" : "#059669"}
           fontSize="10"
           fontWeight="600"
-        >TF: {activity.totalFloat} | FF: {activity.freeFloat}</text>
+        >{t('visualization.table.headers.tf')}: {activity.totalFloat} | {t('visualization.table.headers.ff')}: {activity.freeFloat}</text>
       </g>
     );
   };
