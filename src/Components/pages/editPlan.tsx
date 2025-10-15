@@ -10,12 +10,12 @@ import axios from "axios";
 const API_BASE = "http://localhost:4000";
 
 interface PlanActivity {
-  id: string;                // lokale UI-ID
-  dbId?: number;             // echte DB-ID
+  id: string;
+  dbId?: number;
   referenceNumber: number;
   activityName: string;
   dauer: string;
-  vorgaenger: number[];      // Ref-Nummern
+  vorgaenger: number[];
 }
 
 const EditPlans: FC = () => {
@@ -30,24 +30,44 @@ const EditPlans: FC = () => {
 
   const id = planId ? parseInt(planId, 10) : null;
 
-  // ---- Laden ----
   useEffect(() => {
     const fetchPlan = async () => {
       if (!id) return;
+
       try {
         const planResp = await axios.get(`${API_BASE}/netzplaene/${id}`);
         setPlanName(planResp.data.name);
         setPlanDescription(planResp.data.description);
 
         const actResp = await axios.get(`${API_BASE}/netzplaene/${id}/aktivitaeten`);
-        const loadedActs: PlanActivity[] = actResp.data.map((a: any, idx: number) => ({
-          id: Date.now().toString() + idx,
-          dbId: a.id,
-          referenceNumber: a.ref_number,
-          activityName: a.name,
-          dauer: a.dauer.toString(),
-          vorgaenger: a.vorgaenger || []
-        }));
+        const rawActs: {
+          id: number;
+          ref_number: number;
+          name: string;
+          dauer: number;
+          vorgaenger: number[];
+        }[] = actResp.data;
+
+        const idToRefMap = new Map<number, number>();
+        rawActs.forEach((a) => idToRefMap.set(a.id, a.ref_number));
+
+        const loadedActs: PlanActivity[] = rawActs.map((a, idx) => {
+          const vorgaengerRefNums = Array.isArray(a.vorgaenger)
+            ? a.vorgaenger
+                .map((dbId: number) => idToRefMap.get(dbId))
+                .filter((refNum): refNum is number => typeof refNum === "number")
+            : [];
+
+          return {
+            id: Date.now().toString() + idx,
+            dbId: a.id,
+            referenceNumber: a.ref_number,
+            activityName: a.name,
+            dauer: a.dauer.toString(),
+            vorgaenger: vorgaengerRefNums,
+          };
+        });
+
         setActivities(loadedActs);
       } catch (err) {
         console.error("Fehler beim Laden:", err);
@@ -57,93 +77,83 @@ const EditPlans: FC = () => {
     fetchPlan();
   }, [id]);
 
-  // ---- Helpers ----
   const addRow = () => {
     const newActivity: PlanActivity = {
       id: Date.now().toString(),
       referenceNumber: activities.length + 1,
       activityName: "",
       dauer: "",
-      vorgaenger: []
+      vorgaenger: [],
     };
-    setActivities(prev => [...prev, newActivity]);
+    setActivities((prev) => [...prev, newActivity]);
   };
 
   const removeRow = (id: string) => {
     const updated = activities
-      .filter(a => a.id !== id)
+      .filter((a) => a.id !== id)
       .map((a, idx) => ({ ...a, referenceNumber: idx + 1 }));
     setActivities(updated);
   };
 
   const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
-    setActivities(prev => prev.map(a => (a.id === id ? { ...a, [field]: value } : a)));
+    setActivities((prev) => prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
   };
 
   const allActivitiesValid = activities.every(
-    a => a.activityName.trim() !== "" && a.dauer !== ""
+    (a) => a.activityName.trim() !== "" && a.dauer !== ""
   );
   const canSave = planName.trim() !== "" && allActivitiesValid && !isSaving;
 
-  // ---- Speichern über neuen Endpoint ----
-const savePlan = async () => {
-  if (!canSave || !id) return;
-  setIsSaving(true);
+  const savePlan = async () => {
+    if (!canSave || !id) return;
+    setIsSaving(true);
 
-  try {
-    // 1) Alten Plan löschen
-    await axios.delete(`${API_BASE}/netzplaene/${id}`);
-    console.log(`Alter Plan ${id} gelöscht.`);
+    try {
+      await axios.delete(`${API_BASE}/netzplaene/${id}`);
 
-    // 2) Neuen Plan anlegen
-    const planResp = await axios.post(`${API_BASE}/netzplaene`, {
-      name: planName,
-      description: planDescription
-    });
-    const newPlanId: number = planResp.data.id;
-    console.log('Neuer Plan erstellt:', newPlanId);
-
-    // 3) Aktivitäten anlegen und Map refNum -> dbId speichern
-    const refNumToDbId = new Map<number, number>();
-    for (const a of activities) {
-      const createResp = await axios.post(`${API_BASE}/aktivitaeten`, {
-        netzplan_id: newPlanId,
-        ref_number: a.referenceNumber,
-        name: a.activityName,
-        dauer: parseFloat(a.dauer || '0')
+      const planResp = await axios.post(`${API_BASE}/netzplaene`, {
+        name: planName,
+        description: planDescription,
       });
-      const dbId: number = createResp.data.id;
-      refNumToDbId.set(a.referenceNumber, dbId);
+      const newPlanId: number = planResp.data.id;
+
+      const refNumToDbId = new Map<number, number>();
+      for (const a of activities) {
+        const createResp = await axios.post(`${API_BASE}/aktivitaeten`, {
+          netzplan_id: newPlanId,
+          ref_number: a.referenceNumber,
+          name: a.activityName,
+          dauer: parseFloat(a.dauer || "0"),
+        });
+        const dbId: number = createResp.data.id;
+        refNumToDbId.set(a.referenceNumber, dbId);
+      }
+
+      for (const a of activities) {
+        if (!a.vorgaenger || a.vorgaenger.length === 0) continue;
+        const vorgaengerDbIds = a.vorgaenger
+          .map((refNum) => refNumToDbId.get(refNum))
+          .filter((x): x is number => typeof x === "number");
+        const aktivitaetDbId = refNumToDbId.get(a.referenceNumber);
+        if (!aktivitaetDbId) continue;
+
+        await axios.put(`${API_BASE}/aktivitaeten/${aktivitaetDbId}`, {
+          ref_number: a.referenceNumber,
+          name: a.activityName,
+          dauer: parseFloat(a.dauer || "0"),
+          vorgaenger: vorgaengerDbIds,
+        });
+      }
+
+      setIsSaving(false);
+      navigate("/manage-plans");
+    } catch (err) {
+      console.error("Speichern fehlgeschlagen:", err);
+      setIsSaving(false);
+      alert("Fehler beim Speichern. Siehe Konsole.");
     }
+  };
 
-    // 4) Vorgänger-Mappings updaten
-    for (const a of activities) {
-      if (!a.vorgaenger || a.vorgaenger.length === 0) continue;
-      const vorgaengerDbIds = a.vorgaenger
-        .map(refNum => refNumToDbId.get(refNum))
-        .filter((x): x is number => typeof x === 'number');
-      const aktivitaetDbId = refNumToDbId.get(a.referenceNumber);
-      if (!aktivitaetDbId) continue;
-
-      await axios.put(`${API_BASE}/aktivitaeten/${aktivitaetDbId}`, {
-        ref_number: a.referenceNumber,
-        name: a.activityName,
-        dauer: parseFloat(a.dauer || '0'),
-        vorgaenger: vorgaengerDbIds
-      });
-    }
-
-    setIsSaving(false);
-    navigate("/manage-plans");
-  } catch (err) {
-    console.error("Speichern fehlgeschlagen:", err);
-    setIsSaving(false);
-    alert("Fehler beim Speichern (Workaround-Modus). Siehe Konsole.");
-  }
-};
-
-
-  // ---- UI ----
   return (
     <Layout>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-7xl mx-auto px-6 min-h-[calc(100vh-200px)]">
@@ -153,7 +163,6 @@ const savePlan = async () => {
           </h1>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
-            {/* Metadata */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="block text-white font-medium mb-2">
@@ -179,7 +188,6 @@ const savePlan = async () => {
               </div>
             </div>
 
-            {/* Table header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold text-white">
                 {t("createPlan.planActivities")}
@@ -192,20 +200,27 @@ const savePlan = async () => {
               </Button>
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-white/20">
                     <th className="text-left text-white font-medium p-3">#</th>
-                    <th className="text-left text-white font-medium p-3">{t("createPlan.activityName")}</th>
-                    <th className="text-left text-white font-medium p-3">{t("createPlan.duration")}</th>
-                    <th className="text-left text-white font-medium p-3">{t("createPlan.predecessors")}</th>
-                    <th className="text-left text-white font-medium p-3">{t("createPlan.actions")}</th>
+                    <th className="text-left text-white font-medium p-3">
+                      {t("createPlan.activityName")}
+                    </th>
+                    <th className="text-left text-white font-medium p-3">
+                      {t("createPlan.duration")}
+                    </th>
+                    <th className="text-left text-white font-medium p-3">
+                      {t("createPlan.predecessors")}
+                    </th>
+                    <th className="text-left text-white font-medium p-3">
+                      {t("createPlan.actions")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {activities.map(a => (
+                  {activities.map((a) => (
                     <tr key={a.id} className="border-b border-white/10 hover:bg-white/5">
                       <td className="p-3 text-center text-white">{a.referenceNumber}</td>
                       <td className="p-3">
@@ -227,7 +242,7 @@ const savePlan = async () => {
                         />
                       </td>
                       <td className="p-3">
-                        {activities.filter(x => x.id !== a.id).map(prev => (
+                        {activities.filter((x) => x.id !== a.id).map((prev) => (
                           <label key={prev.id} className="inline-flex items-center mr-4 text-white">
                             <input
                               type="checkbox"
@@ -236,11 +251,13 @@ const savePlan = async () => {
                               onChange={(e) => {
                                 const newVorgaenger = e.target.checked
                                   ? [...a.vorgaenger, prev.referenceNumber]
-                                  : a.vorgaenger.filter(v => v !== prev.referenceNumber);
+                                  : a.vorgaenger.filter((v) => v !== prev.referenceNumber);
                                 updateActivity(a.id, "vorgaenger", newVorgaenger);
                               }}
                             />
-                            <span>{prev.referenceNumber} {prev.activityName || ""}</span>
+                            <span>
+                              {prev.referenceNumber} {prev.activityName || ""}
+                            </span>
                           </label>
                         ))}
                       </td>
