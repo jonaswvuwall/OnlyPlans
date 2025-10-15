@@ -86,37 +86,62 @@ const EditPlans: FC = () => {
   const canSave = planName.trim() !== "" && allActivitiesValid && !isSaving;
 
   // ---- Speichern über neuen Endpoint ----
-  const savePlan = async () => {
-    if (!canSave || !id) return;
-    setIsSaving(true);
+const savePlan = async () => {
+  if (!canSave || !id) return;
+  setIsSaving(true);
 
-    try {
-      // Plan updaten
-      await axios.put(`${API_BASE}/netzplaene/${id}`, {
-        name: planName,
-        description: planDescription
+  try {
+    // 1) Alten Plan löschen
+    await axios.delete(`${API_BASE}/netzplaene/${id}`);
+    console.log(`Alter Plan ${id} gelöscht.`);
+
+    // 2) Neuen Plan anlegen
+    const planResp = await axios.post(`${API_BASE}/netzplaene`, {
+      name: planName,
+      description: planDescription
+    });
+    const newPlanId: number = planResp.data.id;
+    console.log('Neuer Plan erstellt:', newPlanId);
+
+    // 3) Aktivitäten anlegen und Map refNum -> dbId speichern
+    const refNumToDbId = new Map<number, number>();
+    for (const a of activities) {
+      const createResp = await axios.post(`${API_BASE}/aktivitaeten`, {
+        netzplan_id: newPlanId,
+        ref_number: a.referenceNumber,
+        name: a.activityName,
+        dauer: parseFloat(a.dauer || '0')
       });
-
-      // Aktivitäten + Vorgänger in einem Request speichern
-      await axios.post(`${API_BASE}/aktivitaeten/save-mapping`, {
-        planId: id,
-        activities: activities.map(a => ({
-          dbId: a.dbId,
-          referenceNumber: a.referenceNumber,
-          activityName: a.activityName,
-          dauer: a.dauer,
-          vorgaenger: a.vorgaenger
-        }))
-      });
-
-      setIsSaving(false);
-      navigate("/manage-plans");
-    } catch (err) {
-      console.error("Speichern fehlgeschlagen:", err);
-      setIsSaving(false);
-      alert("Fehler beim Speichern. Siehe Konsole.");
+      const dbId: number = createResp.data.id;
+      refNumToDbId.set(a.referenceNumber, dbId);
     }
-  };
+
+    // 4) Vorgänger-Mappings updaten
+    for (const a of activities) {
+      if (!a.vorgaenger || a.vorgaenger.length === 0) continue;
+      const vorgaengerDbIds = a.vorgaenger
+        .map(refNum => refNumToDbId.get(refNum))
+        .filter((x): x is number => typeof x === 'number');
+      const aktivitaetDbId = refNumToDbId.get(a.referenceNumber);
+      if (!aktivitaetDbId) continue;
+
+      await axios.put(`${API_BASE}/aktivitaeten/${aktivitaetDbId}`, {
+        ref_number: a.referenceNumber,
+        name: a.activityName,
+        dauer: parseFloat(a.dauer || '0'),
+        vorgaenger: vorgaengerDbIds
+      });
+    }
+
+    setIsSaving(false);
+    navigate("/manage-plans");
+  } catch (err) {
+    console.error("Speichern fehlgeschlagen:", err);
+    setIsSaving(false);
+    alert("Fehler beim Speichern (Workaround-Modus). Siehe Konsole.");
+  }
+};
+
 
   // ---- UI ----
   return (
