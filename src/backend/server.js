@@ -230,5 +230,5 @@ const HOST = '0.0.0.0'; // Listen on all network interfaces
 app.listen(PORT, HOST, () => {
   console.log(`✅ Backend läuft auf http://localhost:${PORT}`);
   console.log(`🌐 Auch erreichbar über Netzwerk auf http://<YOUR_IP>:${PORT}`);
-  console.log(`💡 Um deine IP zu finden: ipconfig (Windows) oder ifconfig (Mac/Linux)`);
+  console.log(`💡 Um deine IP zu finden: "ipconfig" (Windows) oder "ip a" (Mac/Linux)`);
 });
