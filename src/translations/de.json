@@ -24,10 +24,7 @@
     "goToLandingPage": "Zur Startseite",
     "createPlan": "Plan Erstellen",
     "operations": "Operationen",
-    "visualization": "Visualisierung",
-    "switchToGerman": "Zu Deutsch wechseln",
-    "switchToEnglish": "Zu Englisch wechseln",
-    "languageSwitcherAria": "Klicken um Sprache zu wechseln"
+    "visualization": "Visualisierung"
   },
   "landing": {
     "title": "Willkommen bei OnlyPlans",
@@ -93,6 +90,7 @@
     },
     "statistics": {
       "projectDuration": "Projektdauer",
+      "days": "Tage",
       "criticalPath": "Kritischer Pfad",
       "criticalActivities": "Kritische Aktivitäten",
       "totalActivities": "Gesamtaktivitäten",
@@ -101,7 +99,7 @@
     "legend": {
       "criticalPath": "Kritischer Pfad",
       "normalActivity": "Normale Aktivität",
-      "bufferGreaterThanZero": "Puffer > 0"
+      "bufferGreaterZero": "Puffer > 0"
     },
     "networkPlan": {
       "es": "FAZ",
@@ -143,23 +141,35 @@
       }
     },
     "terms": {
-      "title": "Begriffsdefinitionen:",
-      "eas": "FAZ/FEZ: Frühester Aktivitätsbeginn/-ende - Der frühestmögliche Start- und Endzeitpunkt einer Aktivität.",
-      "las": "SAZ/SEZ: Spätester Aktivitätsbeginn/-ende - Der spätestmögliche Start- und Endzeitpunkt einer Aktivität.",
-      "totalFloat": "Gesamtpuffer (GP): Die Zeitspanne, um die eine Aktivität verzögert werden kann, ohne das Projekt zu gefährden.",
-      "criticalPath": "Kritischer Pfad: Der Pfad im Netzplan, der aus Aktivitäten ohne Pufferzeit besteht (GP = 0)."
+      "title": "Begriffsdefinitionen",
+      "easEaf": {
+        "title": "FAZ/FEZ:",
+        "description": "Frühester Aktivitätsbeginn/-ende - Der frühestmögliche Start- und Endzeitpunkt einer Aktivität."
+      },
+      "lasLaf": {
+        "title": "SAZ/SEZ:",
+        "description": "Spätester Aktivitätsbeginn/-ende - Der spätestmögliche Start- und Endzeitpunkt einer Aktivität."
+      },
+      "totalFloat": {
+        "title": "Gesamtpuffer (GP):",
+        "description": "Die Zeitspanne, um die eine Aktivität verzögert werden kann, ohne das Projekt zu gefährden."
+      },
+      "criticalPath": {
+        "title": "Kritischer Pfad:",
+        "description": "Der Pfad im Netzplan, der aus Aktivitäten ohne Pufferzeit besteht (GP = 0)."
+      }
     },
     "criticalPathDetails": {
       "title": "Kritischer Pfad",
-      "important": "Wichtig:",
-      "warning": "Verzögerungen bei diesen Aktivitäten verlängern das gesamte Projekt!"
+      "importantLabel": "Wichtig:",
+      "importantText": "Verzögerungen bei diesen Aktivitäten verlängern das gesamte Projekt!"
     },
     "noData": {
       "title": "Keine Daten Verfügbar",
-      "message": "Bitte erstellen Sie zuerst einen Plan mit Aktivitäten.",
-      "createPlan": "Plan Erstellen"
+      "description": "Bitte erstellen Sie zuerst einen Plan mit Aktivitäten.",
+      "createButton": "Plan Erstellen"
     },
-    "backToPlanCreation": "Zurück zur Plan-Erstellung",
+    "backButton": "Zurück zur Plan-Erstellung",
     "exportErrors": {
       "pngFailed": "Export als PNG fehlgeschlagen. Bitte versuchen Sie es erneut.",
       "jpgFailed": "Export als JPG fehlgeschlagen. Bitte versuchen Sie es erneut.",

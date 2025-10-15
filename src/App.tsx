@@ -60,7 +60,7 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <TranslationProvider defaultLanguage="en">
+    <TranslationProvider>
       <Router>
         <BackgroundWrapper>
           <Header />
