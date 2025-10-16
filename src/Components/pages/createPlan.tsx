@@ -46,9 +46,8 @@ const CreatePlan: FC = () => {
     setActivities(updated);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
-    setActivities(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
+  const updateActivity = (id: string, field: keyof PlanActivity, value: string | number | number[]) => {
+    setActivities(prev => prev.map(a => (a.id === id ? { ...a, [field]: value } : a)));
   };
 
   // Validierung: activityName und dauer Pflicht

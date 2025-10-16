@@ -95,7 +95,7 @@ const EditPlans: FC = () => {
     setActivities(updated);
   };
 
-  const updateActivity = (id: string, field: keyof PlanActivity, value: any) => {
+  const updateActivity = (id: string, field: keyof PlanActivity, value: string | number | number[] | undefined) => {
     setActivities((prev) => prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
   };
 
