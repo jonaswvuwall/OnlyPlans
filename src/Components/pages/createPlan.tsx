@@ -6,8 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { FC } from 'react';
 import axios from 'axios';
-
-const API_BASE = 'http://localhost:4000';
+import { API_BASE } from '../../config/api';
 
 interface PlanActivity {
   id: string;                // lokale ID für UI (Date.now() usw.)

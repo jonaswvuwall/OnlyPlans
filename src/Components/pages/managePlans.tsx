@@ -5,6 +5,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import axios from 'axios';
+import { API_BASE } from '../../config/api';
 
 // Define the structure for a backend plan
 interface BackendPlan {
@@ -33,14 +34,14 @@ const ManagePlans: FC = () => {
     const fetchPlans = async () => {
       try {
         console.log('Fetching plans from backend...');
-        const { data: netzplaene } = await axios.get('http://localhost:4000/netzplaene');
+        const { data: netzplaene } = await axios.get(`${API_BASE}/netzplaene`);
         console.log('Plans fetched:', netzplaene);
 
         // Fetch activities count for each plan
         const plansWithCounts = await Promise.all(
           netzplaene.map(async (plan: BackendPlan) => {
             try {
-              const { data: activities } = await axios.get(`http://localhost:4000/netzplaene/${plan.id}/aktivitaeten`);
+              const { data: activities } = await axios.get(`${API_BASE}/netzplaene/${plan.id}/aktivitaeten`);
               return {
                 id: plan.id,
                 name: plan.name,
@@ -67,7 +68,7 @@ const ManagePlans: FC = () => {
         
         let errorMessage = 'Failed to load plans';
         if (err && typeof err === 'object' && 'code' in err && err.code === 'ERR_NETWORK') {
-          errorMessage = 'Cannot connect to backend server. Please make sure it is running on http://localhost:4000';
+          errorMessage = `Cannot connect to backend server. Please make sure it is running on ${API_BASE}`;
         } else if (err instanceof Error) {
           errorMessage = `Error: ${err.message}`;
         }
@@ -99,7 +100,7 @@ const ManagePlans: FC = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:4000/netzplaene/${planId}`);
+      await axios.delete(`${API_BASE}/netzplaene/${planId}`);
       setPlans(prev => prev.filter(p => p.id !== planId));
       alert(t('editPlans.deleteSuccess'));
     } catch (err) {
