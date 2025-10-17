@@ -16,9 +16,7 @@ interface TranslationContextType {
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
 // Translation data interface
-interface TranslationData {
-  [key: string]: string | TranslationData;
-}
+type TranslationData = Record<string, unknown>;
 
 // Load translation data synchronously
 const getTranslations = (): TranslationData => {
@@ -27,9 +25,12 @@ const getTranslations = (): TranslationData => {
 
 // Get nested value from object using dot notation
 const getNestedValue = (obj: TranslationData, path: string): string => {
-  return path.split('.').reduce((current, key) => {
-    return current && typeof current === 'object' && current[key] !== undefined ? current[key] : null;
-  }, obj as TranslationData | string | null) as string;
+  return path.split('.').reduce((current: unknown, key: string) => {
+    if (current && typeof current === 'object' && key in current) {
+      return (current as Record<string, unknown>)[key];
+    }
+    return null;
+  }, obj) as string;
 };
 
 // Provider component props
