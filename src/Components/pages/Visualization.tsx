@@ -958,7 +958,7 @@ const Visualization: FC = () => {
               y1={startY}
               x2={endX}
               y2={endY}
-              stroke={isCriticalPath ? "#dc2626" : "#64748b"}
+              stroke={isCriticalPath ? "#dc2626" : "#ffffffff"}
               strokeWidth={isCriticalPath ? "2.5" : "1.5"}
               markerEnd={`url(#arrowhead-${isCriticalPath ? 'critical' : 'normal'})`}
               opacity={isCriticalPath ? "0.9" : "0.7"}
