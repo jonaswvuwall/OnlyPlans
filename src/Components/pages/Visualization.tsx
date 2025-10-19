@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import type { FC } from 'react';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Download } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
