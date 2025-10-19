@@ -1,4 +1,3 @@
-// src/Components/pages/CreatePlan.tsx
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useState } from 'react';
@@ -9,11 +8,11 @@ import axios from 'axios';
 import { API_BASE } from '../../config/api';
 
 interface PlanActivity {
-  id: string;                // lokale ID für UI (Date.now() usw.)
-  referenceNumber: number;   // 1,2,3...
+  id: string;                
+  referenceNumber: number;   
   activityName: string;
-  dauer: string;             // als string in UI, saved als float
-  vorgaenger: number[];      // in UI: array von referenceNumbers (1,2,3) — wird beim Speichern auf DB-IDs gemappt
+  dauer: string;             
+  vorgaenger: number[];     
 }
 
 const CreatePlan: FC = () => {
@@ -53,13 +52,11 @@ const CreatePlan: FC = () => {
   const allActivitiesValid = activities.every(a => a.activityName.trim() !== '' && a.dauer !== '');
   const canSave = planName.trim() !== '' && allActivitiesValid && !isSaving;
 
-  // --- Save logic: create plan -> create activities -> update mappings with DB-IDs ---
   const savePlan = async () => {
     if (!canSave) return;
     setIsSaving(true);
 
     try {
-      // 1) Netzplan erstellen
       const planResp = await axios.post(`${API_BASE}/netzplaene`, {
         name: planName,
         description: planDescription
@@ -67,7 +64,6 @@ const CreatePlan: FC = () => {
       const planId: number = planResp.data.id;
       console.log('Plan created id=', planId);
 
-      // 2) Aktivitäten erstellen (ohne Vorgänger) und Map refNumber -> DB id sammeln
       const refNumToDbId = new Map<number, number>();
       for (const a of activities) {
         const createResp = await axios.post(`${API_BASE}/aktivitaeten`, {
@@ -75,20 +71,18 @@ const CreatePlan: FC = () => {
           ref_number: a.referenceNumber,
           name: a.activityName,
           dauer: parseFloat(a.dauer || '0')
-          // vorgaenger we leave empty on creation — we'll handle mappings in step 3
         });
         const dbId: number = createResp.data.id;
         refNumToDbId.set(a.referenceNumber, dbId);
         console.log(`Activity created ref=${a.referenceNumber} -> dbId=${dbId}`);
       }
 
-      // 3) Vorgänger-Mappings setzen (PUT pro Aktivität) — map von referenceNumber -> DB id
       for (const a of activities) {
         if (!a.vorgaenger || a.vorgaenger.length === 0) continue;
 
         const vorgaengerDbIds = a.vorgaenger
           .map(refNum => refNumToDbId.get(refNum))
-          .filter((x): x is number => typeof x === 'number'); // filter undefined
+          .filter((x): x is number => typeof x === 'number');
 
         if (vorgaengerDbIds.length === 0) continue;
 
@@ -105,7 +99,6 @@ const CreatePlan: FC = () => {
         console.log(`Mappings for activity dbId=${aktivitaetDbId} set to:`, vorgaengerDbIds);
       }
 
-      // Fertig — weiterleiten
       setIsSaving(false);
       navigate('/manage-plans');
     } catch (err) {
@@ -123,8 +116,7 @@ const CreatePlan: FC = () => {
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">{t('createPlan.subtitle')}</p>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
-            {/* Metadata */}
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
+            <div className="grid md:grid-cols-2 gap6 mb-6">
               <div>
                 <label className="block text-white font-medium mb-2">{t('createPlan.planName')} *</label>
                 <input
@@ -146,14 +138,10 @@ const CreatePlan: FC = () => {
                 />
               </div>
             </div>
-
-            {/* Table header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold text-white">{t('createPlan.planActivities')}</h2>
               <Button onClick={addRow} className="bg-green-600 hover:bg-green-700 transition-all duration-300">+ {t('createPlan.addActivity')}</Button>
             </div>
-
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>

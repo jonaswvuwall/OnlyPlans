@@ -1,4 +1,3 @@
-// src/Components/pages/EditPlan.tsx
 import Layout from "../ui/Layout";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
@@ -158,7 +157,7 @@ const EditPlans: FC = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-7xl mx-auto px-6 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full">
           <h1 className="text-5xl font-bold text-white mb-6">
-            {t("editPlan.title") || "Plan Bearbeiten"}
+            {t("editPlans.title") || "Plan Bearbeiten"}
           </h1>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">

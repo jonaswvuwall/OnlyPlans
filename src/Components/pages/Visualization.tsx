@@ -11,14 +11,12 @@ import { useTranslation } from '../../hooks/useTranslation';
 import axios from 'axios';
 import { API_BASE } from '../../config/api';
 
-// Define the structure for a backend plan
 interface BackendPlan {
   id: number;
   name: string;
   description: string;
 }
 
-// Define the structure for a backend activity
 interface BackendActivity {
   id: number;
   ref_number: number;
@@ -28,7 +26,6 @@ interface BackendActivity {
   vorgaenger?: number[]; // Array of predecessor activity IDs
 }
 
-// Define the structure for an activity from createPlan
 interface PlanActivity {
   id: string;
   referenceNumber: number;
@@ -37,26 +34,24 @@ interface PlanActivity {
   vorgaengerid: string;
 }
 
-// Enhanced activity with network plan calculations
 interface NetworkActivity extends PlanActivity {
-  duration: number;                // Parsed duration
-  predecessors: number[];          // Array of predecessor reference numbers
-  faz: number;                     // Earliest Start Time
-  fez: number;                     // Earliest Finish Time
-  saz: number;                     // Latest Start Time
-  sez: number;                     // Latest Finish Time
-  totalFloat: number;              // Total Float
-  freeFloat: number;               // Free Float
-  isCritical: boolean;             // On critical path
+  duration: number;               
+  predecessors: number[];          
+  faz: number;                    
+  fez: number;                   
+  saz: number;                  
+  sez: number;                     
+  totalFloat: number;              
+  freeFloat: number;               
+  isCritical: boolean;
 }
 
-// Layout constants for network nodes (reduced size for denser layout)
-const NODE_WIDTH = 200;      // previously 280
-const NODE_HEIGHT = 155;     // increased slightly to provide more space below LS/LF
-const LEVEL_SPACING = 260;   // previously 350
-const NODE_VERTICAL_SPACING = 160; // previously 220
-const START_X = 120;         // previously 140
-const START_Y = 100;         // previously 120
+const NODE_WIDTH = 200;     
+const NODE_HEIGHT = 155;    
+const LEVEL_SPACING = 260;   
+const NODE_VERTICAL_SPACING = 160; 
+const START_X = 120;         
+const START_Y = 100;        
 
 // Enhanced positioning algorithm for cleaner network visualization (uses new constants)
 const calculateOptimalPositions = (activities: NetworkActivity[]): Map<string, NodePosition> => {
@@ -481,73 +476,24 @@ const Visualization: FC = () => {
         }
           
         case 'jpg': {
-          // For JPG, we need to handle the background properly since JPG doesn't support transparency
-          const tempCanvas = document.createElement('canvas');
-          const tempCtx = tempCanvas.getContext('2d');
-          
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = canvas.height;
-          
-          if (tempCtx) {
-            // Fill with solid background color (JPG doesn't support transparency)
-            tempCtx.fillStyle = '#1e1b4b';
-            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            
-            // Draw the original canvas on top
-            tempCtx.drawImage(canvas, 0, 0);
-            
-            tempCanvas.toBlob((blob) => {
-              if (blob) {
-                saveAs(blob, `${planData.planName}_network_plan.jpg`);
-                console.log('JPG export successful');
-              } else {
-                throw new Error('Failed to create JPG blob');
-              }
-            }, 'image/jpeg', 0.95);
-          } else {
-            throw new Error('Failed to create temporary canvas context for JPG');
-          }
+          //todo
           break;
         }
           
         case 'pdf': {
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm',
-            format: 'a4'
-          });
-          
-          const imgWidth = pdf.internal.pageSize.getWidth();
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          
-          // If the content is too tall, scale it down to fit on one page
-          if (imgHeight > pdf.internal.pageSize.getHeight()) {
-            const scale = pdf.internal.pageSize.getHeight() / imgHeight;
-            const scaledWidth = imgWidth * scale;
-            const scaledHeight = imgHeight * scale;
-            const x = (pdf.internal.pageSize.getWidth() - scaledWidth) / 2;
-            const y = (pdf.internal.pageSize.getHeight() - scaledHeight) / 2;
-            pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-          } else {
-            const y = (pdf.internal.pageSize.getHeight() - imgHeight) / 2;
-            pdf.addImage(imgData, 'PNG', 0, y, imgWidth, imgHeight);
-          }
-          
-          pdf.save(`${planData.planName}_network_plan.pdf`);
+          //todo
           break;
         }
       }
     } catch (error) {
       console.error(`Error exporting as ${format.toUpperCase()}:`, error);
       
-      // Try alternative method for SVG-heavy content
+      //exporting
       try {
         console.log('Trying alternative export method...');
         const svgElement = exportRef.current?.querySelector('svg');
         
         if (svgElement && format === 'png') {
-          // Alternative method using SVG serialization
           const svgData = new XMLSerializer().serializeToString(svgElement);
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -591,12 +537,10 @@ const Visualization: FC = () => {
     }
   };
 
-  // Get node position (either from state or default grid position)
   const getNodePosition = (activity: NetworkActivity, index: number): NodePosition => {
     const savedPos = nodePositions.get(activity.id);
     if (savedPos) return savedPos;
     
-    // Default grid position adjusted for smaller nodes
     const spacing = LEVEL_SPACING;
     return {
       x: START_X + (index % 4) * spacing,
@@ -651,7 +595,7 @@ const Visualization: FC = () => {
     const reversedActivities = [...networkActivities].reverse();
     
     reversedActivities.forEach(activity => {
-      // Find all successors (activities that have this activity as predecessor)
+      // Find all successors
       const successors = networkActivities.filter(successor => 
         successor.predecessors.includes(activity.referenceNumber)
       );
@@ -694,10 +638,9 @@ const Visualization: FC = () => {
     return networkActivities.sort((a, b) => a.referenceNumber - b.referenceNumber);
   };
 
-  // Render network node according to German BWL standards
   const renderNetworkNode = (activity: NetworkActivity, index: number) => {
-  const nodeWidth = NODE_WIDTH;  // reduced size constants
-  const nodeHeight = NODE_HEIGHT; // reduced size constants
+  const nodeWidth = NODE_WIDTH;  
+  const nodeHeight = NODE_HEIGHT;
     const position = getNodePosition(activity, index);
     const isDragging = dragState.draggedNodeId === activity.id;
 
@@ -708,7 +651,6 @@ const Visualization: FC = () => {
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         onMouseDown={(e) => handleMouseDown(e, activity.id)}
       >
-        {/* Modern shadow */}
         <rect
           x={-nodeWidth/2 + 3}
           y={-nodeHeight/2 + 3}
@@ -719,7 +661,6 @@ const Visualization: FC = () => {
           opacity="0.6"
         />
         
-        {/* Gradient definitions */}
         <defs>
           <linearGradient id={`nodeGradient-${activity.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
             {activity.isCritical ? (
@@ -810,7 +751,6 @@ const Visualization: FC = () => {
           {t('visualization.networkPlan.durationShort')}={activity.duration}
         </text>
         
-        {/* Subtle background rectangles for visual separation */}
         {/* Top left quadrant background (ES) */}
         <rect
           x={-nodeWidth/2 + 6}
@@ -974,7 +914,6 @@ const Visualization: FC = () => {
     );
   };
 
-  // Render connections between nodes
   const renderConnections = () => {
   const nodeWidth = NODE_WIDTH;
     
@@ -988,12 +927,10 @@ const Visualization: FC = () => {
           return;
         }
         
-        // Get dynamic positions
         const predecessorActivity = networkActivities[predIndex];
         const startPos = getNodePosition(predecessorActivity, predIndex);
         const endPos = getNodePosition(activity, index);
         
-        // Calculate connection points (edge of nodes)
   const startX = startPos.x + nodeWidth/2;
         const startY = startPos.y;
   const endX = endPos.x - nodeWidth/2;
@@ -1004,7 +941,7 @@ const Visualization: FC = () => {
         
         connections.push(
           <g key={`${predId}-${activity.referenceNumber}`}>
-            {/* Connection line with glow effect for critical path */}
+
             {isCriticalPath && (
               <line
                 x1={startX}
@@ -1053,7 +990,6 @@ const Visualization: FC = () => {
     );
   }
 
-  // Error state - no planId provided
   if (!planId) {
     return (
       <Layout>
@@ -1074,7 +1010,6 @@ const Visualization: FC = () => {
     );
   }
 
-  // Error state - no plan data loaded
   if (!planData) {
     return (
       <Layout>
@@ -1116,20 +1051,18 @@ const Visualization: FC = () => {
     <Layout>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full mx-auto px-4 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full max-w-none">
-          {/* Title */}
           <h1 className="text-5xl font-bold text-white mb-6">
             {t('visualization.title')}
           </h1>
-          
-          {/* Subtitle */}
+        
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
             {planData ? `${t('visualization.project')}: ${planData.planName}` : t('visualization.subtitle')}
           </p>
                 
-          {/* Visualization Container with ref */}
+
           <div ref={visualizationRef} className="visualization-container">
 
-          {/* Project Statistics */}
+
           {networkActivities.length > 0 && (
             <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -1155,11 +1088,11 @@ const Visualization: FC = () => {
             </div>
           )}
           
-          {/* Network Plan Visualization */}
+
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 w-full">
             {networkActivities.length > 0 ? (
               <>
-                {/* Export Button */}
+
                 <div className="flex justify-center mb-6">
                   <div className="relative">
                     <Button
@@ -1174,7 +1107,7 @@ const Visualization: FC = () => {
                       )}
                     </Button>
                     
-                    {/* Export Options Dropdown */}
+
                     {showExportMenu && !isExporting && (
                       <div className="absolute top-full left-0 mt-2 w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-50 shadow-xl">
                         <button
@@ -1212,7 +1145,6 @@ const Visualization: FC = () => {
                   </div>
                 </div>
 
-                {/* Legend */}
                 <div className="flex justify-center gap-8 mb-6 text-sm">
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                     <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded shadow-lg"></div>
@@ -1228,7 +1160,7 @@ const Visualization: FC = () => {
                   </div>
                 </div>
 
-                {/* Export Container - Only for export */}
+
                 <div ref={exportRef} className="export-container" style={{ 
                   padding: '20px', 
                   backgroundColor: '#1e1b4b',
@@ -1237,12 +1169,12 @@ const Visualization: FC = () => {
                   top: '-9999px',
                   visibility: isExporting ? 'visible' : 'hidden'
                 }}>
-                  {/* Plan Title and Description for Export */}
+
                   <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white mb-4">{planData.planName}</h1>
                     <p className="text-lg text-white/80 mb-6">{planData.planDescription}</p>
                     
-                    {/* Legend for Export */}
+
                     <div className="flex justify-center gap-6 mb-8 text-sm">
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded"></div>
@@ -1259,7 +1191,7 @@ const Visualization: FC = () => {
                     </div>
                   </div>
 
-                  {/* Network Plan SVG for Export */}
+
                   <div className="flex justify-center">
                     <svg 
                       width={Math.max(1200, (() => {
@@ -1273,9 +1205,9 @@ const Visualization: FC = () => {
                       })())}
                       style={{ background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, rgba(0, 0, 0, 0.1) 70%)' }}
                     >
-                      {/* Arrow marker definitions */}
+
                       <defs>
-                        {/* Critical path arrow */}
+
                         <marker
                           id="arrowhead-critical-export"
                           markerWidth="8"
@@ -1289,7 +1221,7 @@ const Visualization: FC = () => {
                             fill="#dc2626"
                           />
                         </marker>
-                        {/* Normal arrow */}
+
                         <marker
                           id="arrowhead-normal-export"
                           markerWidth="6"
@@ -1305,7 +1237,6 @@ const Visualization: FC = () => {
                         </marker>
                       </defs>
                       
-                      {/* Render connections first (so they appear behind nodes) */}
                       {networkActivities.map((activity, index) => {
                         const connections: React.ReactElement[] = [];
                         
@@ -1315,13 +1246,11 @@ const Visualization: FC = () => {
                           if (predIndex === -1) {
                             return;
                           }
-                          
-                          // Get dynamic positions
+
                           const predecessorActivity = networkActivities[predIndex];
                           const startPos = getNodePosition(predecessorActivity, predIndex);
                           const endPos = getNodePosition(activity, index);
                           
-                          // Calculate connection points (edge of nodes)
                           const nodeWidth = NODE_WIDTH;
                           const startX = startPos.x + nodeWidth/2;
                           const startY = startPos.y;
@@ -1333,7 +1262,6 @@ const Visualization: FC = () => {
                           
                           connections.push(
                             <g key={`${predId}-${activity.referenceNumber}`}>
-                              {/* Connection line with glow effect for critical path */}
                               {isCriticalPath && (
                                 <line
                                   x1={startX}
@@ -1362,13 +1290,11 @@ const Visualization: FC = () => {
                         return connections;
                       })}
                       
-                      {/* Render nodes */}
                       {networkActivities.map((activity, index) => renderNetworkNode(activity, index))}
                     </svg>
                   </div>
                 </div>
 
-                {/* Network Plan SVG */}
                 <div className="overflow-x-auto bg-white/5 rounded-xl p-8 border border-white/10 w-full">
                   <svg 
                     width={Math.max(1200, (() => {
@@ -1386,9 +1312,7 @@ const Visualization: FC = () => {
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
                   >
-                    {/* Arrow marker definitions */}
                     <defs>
-                      {/* Critical path arrow */}
                       <marker
                         id="arrowhead-critical"
                         markerWidth="8"
@@ -1402,7 +1326,6 @@ const Visualization: FC = () => {
                           fill="#dc2626"
                         />
                       </marker>
-                      {/* Normal arrow */}
                       <marker
                         id="arrowhead-normal"
                         markerWidth="6"
@@ -1418,15 +1341,12 @@ const Visualization: FC = () => {
                       </marker>
                     </defs>
                     
-                    {/* Render connections first (so they appear behind nodes) */}
                     {renderConnections()}
                     
-                    {/* Render nodes */}
                     {networkActivities.map((activity, index) => renderNetworkNode(activity, index))}
                   </svg>
                 </div>
 
-                {/* Activity Details Table */}
                 <div className="mt-8">
                   <h3 className="text-xl font-semibold text-white mb-4">{t('visualization.table.title')}</h3>
                   <div className="overflow-x-auto bg-white/5 rounded-xl border border-white/10">
@@ -1513,7 +1433,6 @@ const Visualization: FC = () => {
                     </table>
                   </div>
                   
-                  {/* Terms explanation */}
                   <div className="mt-6 bg-white/5 rounded-lg p-4 border border-white/10">
                     <h4 className="text-lg font-semibold text-white mb-3">📚 {t('visualization.terms.title')}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/80">
@@ -1533,7 +1452,6 @@ const Visualization: FC = () => {
                   </div>
                 </div>
 
-                {/* Critical Path Details */}
                 {criticalPath.length > 0 && (
                   <div className="mt-6 bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-4">
@@ -1576,10 +1494,7 @@ const Visualization: FC = () => {
               </div>
             )}
           </div>
-          
-          </div> {/* End of visualization container */}
-          
-          {/* Back Button */}
+          </div>
           <div className="flex justify-center mt-8">
             <Button 
               onClick={() => navigate('/create-plan')}

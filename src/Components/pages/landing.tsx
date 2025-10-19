@@ -7,12 +7,9 @@ const Landing: FC = () => {
   
   return (
     <Layout>
-      {/* Hero Section */}
   <div className="flex-grow flex flex-col items-center px-4 pt-6 pb-12">
-        
-        {/* Main Logo with enhanced styling */}
+      
   <div className="relative mb-0 group">
-          {/* Logo with enhanced glow */}
           <img 
             src="/Logo_big-Photoroom.png" 
             alt={t('navigation.logo')} 
@@ -23,10 +20,8 @@ const Landing: FC = () => {
           />
         </div>
 
-        {/* Hero Content */}
         <div className="text-center max-w-4xl mx-auto space-y-6 animate-fadeIn">
           
-          {/* Feature Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-1 max-w-4xl mx-auto">
             <div className="text-center p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-400 rounded-xl mx-auto mb-4 flex items-center justify-center">

@@ -10,7 +10,6 @@ const Support: FC = () => {
     alert(`Herzlichen Glückwunsch! Sie haben das ${planName} Paket ausgewählt. Unser Verkaufsteam wird sich in den nächsten 3-5 Geschäftstagen bei Ihnen melden! 💰`);
   };
 
-  // Define package data directly
   const packages = {
     basic: {
       name: 'Goldener Standard',
@@ -83,7 +82,6 @@ const Support: FC = () => {
     <Layout>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-7xl mx-auto px-6 min-h-[calc(100vh-200px)] py-12">
         
-        {/* Header */}
         <div className="text-center space-y-6 mb-16">
           <div className="text-6xl mb-4">💎</div>
           <h1 className="text-6xl font-bold text-white mb-6">
@@ -94,10 +92,8 @@ const Support: FC = () => {
           </p>
         </div>
 
-        {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8 mb-16 w-full max-w-6xl">
           
-          {/* Basic Package */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 hover:bg-white/15 hover:scale-105 transition-all duration-300 flex flex-col h-full">
             <div className="text-center mb-6">
               <div className="text-4xl mb-4">🥇</div>
@@ -129,7 +125,6 @@ const Support: FC = () => {
             </Button>
           </div>
 
-          {/* Premium Package */}
           <div className="bg-white/10 backdrop-blur-md border-2 border-purple-400 rounded-xl p-8 hover:bg-white/15 hover:scale-105 transition-all duration-300 flex flex-col h-full relative">
             
             <div className="text-center mb-6">
@@ -161,9 +156,7 @@ const Support: FC = () => {
             </Button>
           </div>
 
-          {/* Enterprise Package */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 hover:bg-white/15 hover:scale-105 transition-all duration-300 flex flex-col h-full relative overflow-hidden">
-            {/* Luxury Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 to-yellow-600/10 pointer-events-none"></div>
             
             <div className="text-center mb-6 relative z-10">
@@ -196,7 +189,6 @@ const Support: FC = () => {
           </div>
         </div>
 
-        {/* Features Section */}
         <div className="grid md:grid-cols-3 gap-8 mb-16 w-full max-w-5xl">
           <div className="text-center p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl">
             <div className="text-3xl mb-4">🎯</div>
@@ -216,8 +208,6 @@ const Support: FC = () => {
             <p className="text-white/60 text-sm">{t('support.features.availability.description')}</p>
           </div>
         </div>
-
-        {/* Testimonials Section */}
         <div className="w-full max-w-6xl mb-12">
           <h3 className="text-3xl font-bold text-white text-center mb-12">{t('support.testimonials.title')}</h3>
           
@@ -239,7 +229,6 @@ const Support: FC = () => {
           </div>
         </div>
 
-        {/* CTA Section */}
         <div className="text-center">
           <div className="text-4xl mb-4">🚀</div>
           <h3 className="text-2xl font-bold text-white mb-4">Bereit für Premium Support?</h3>

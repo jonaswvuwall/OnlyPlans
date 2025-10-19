@@ -199,7 +199,9 @@
     "deleteConfirmation": "Sind Sie sicher, dass Sie den Plan '{planName}' löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteSuccess": "Plan erfolgreich gelöscht!",
     "deleteError": "Fehler beim Löschen des Plans. Bitte versuchen Sie es erneut.",
-    "loadError": "Fehler beim Laden der Pläne aus der Datenbank."
+    "loadError": "Fehler beim Laden der Pläne aus der Datenbank.",
+    "retry": "Erneut Versuchen",
+    "createNewPlanInstead": "Stattdessen Neuen Plan Erstellen"
   },
   "operation": {
     "title": "Operationen",

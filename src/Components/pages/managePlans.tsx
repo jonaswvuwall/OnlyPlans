@@ -7,14 +7,6 @@ import type { FC } from 'react';
 import axios from 'axios';
 import { API_BASE } from '../../config/api';
 
-// Define the structure for a backend plan
-interface BackendPlan {
-  id: number;
-  name: string;
-  description: string;
-}
-
-// Define the structure for a plan
 interface Plan {
   id: number;
   name: string;
@@ -30,16 +22,14 @@ const ManagePlans: FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load plans from backend
     const fetchPlans = async () => {
       try {
         console.log('Fetching plans from backend...');
         const { data: netzplaene } = await axios.get(`${API_BASE}/netzplaene`);
         console.log('Plans fetched:', netzplaene);
 
-        // Fetch activities count for each plan
         const plansWithCounts = await Promise.all(
-          netzplaene.map(async (plan: BackendPlan) => {
+          netzplaene.map(async (plan: Pick<Plan, 'id' | 'name' | 'description'>) => {
             try {
               const { data: activities } = await axios.get(`${API_BASE}/netzplaene/${plan.id}/aktivitaeten`);
               return {
@@ -88,7 +78,6 @@ const ManagePlans: FC = () => {
   };
 
   const handleViewPlan = (planId: number) => {
-    // Navigate to visualization page
     navigate(`/visualization/${planId}`);
   };
 
@@ -117,7 +106,6 @@ const ManagePlans: FC = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Layout>
@@ -136,11 +124,10 @@ const ManagePlans: FC = () => {
                     onClick={() => {
                       setError(null);
                       setLoading(true);
-                      // Trigger a refetch by re-mounting the component
                       window.location.reload();
                     }}
                   >
-                    Retry
+                    {t('editPlans.retry')}
                   </Button>
                   <div>
                     <Button
@@ -148,7 +135,7 @@ const ManagePlans: FC = () => {
                       className="border-white/20 text-white hover:bg-white/10"
                       onClick={() => navigate('/create-plan')}
                     >
-                      Create New Plan Instead
+                      {t('editPlans.createNewPlanInstead')}
                     </Button>
                   </div>
                 </div>
