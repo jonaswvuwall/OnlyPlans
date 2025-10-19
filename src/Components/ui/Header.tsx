@@ -7,10 +7,9 @@ const Header: FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   
-  // Determine if we should show the Get Started button (only on landing page)
+
   const showGetStartedButton = location.pathname === '/' || location.pathname === '/home';
 
-  // CardNav data
   const navItems = [
     {
       label: t('header.products'),
@@ -41,7 +40,6 @@ const Header: FC = () => {
     }
   ];
 
-  // Add Get Started button to navigation if requested (for landing page)
   const navItemsWithGetStarted = showGetStartedButton 
     ? [
         ...navItems,

@@ -1,7 +1,6 @@
 import React, { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
-// use your own icon import if react-icons is not available
 import { GoArrowUpRight } from 'react-icons/go';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -50,7 +49,6 @@ const CardNav: React.FC<CardNavProps> = ({
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
-  // Dynamic button text and navigation based on current route
   const isOnLandingPage = location.pathname === '/' || location.pathname === '/home';
   const buttonText = isOnLandingPage ? t('common.getStarted') : t('common.home');
   const targetRoute = isOnLandingPage ? '/operation' : '/operation';
@@ -210,7 +208,6 @@ const CardNav: React.FC<CardNavProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Navigation Buttons - Hidden on mobile, shown on desktop */}
             <div className="hidden md:flex items-center gap-2">
               {!isOnLandingPage && (
                 <button
