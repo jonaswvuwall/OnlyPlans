@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
@@ -9,9 +8,7 @@ app.use(express.json());
 
 const db = new sqlite3.Database("database.db");
 
-// -------------------
-// Tabellen erstellen
-// -------------------
+
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS netzplaene (
@@ -43,9 +40,6 @@ db.serialize(() => {
   `);
 });
 
-// -------------------
-// Netzplan-Endpunkte
-// -------------------
 app.get("/netzplaene", (_req, res) => {
   db.all("SELECT * FROM netzplaene", (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -74,7 +68,6 @@ app.post("/netzplaene", (req, res) => {
   );
 });
 
-// ❌ Netzplan löschen inkl. Aktivitäten + Vorgänger
 app.delete("/netzplaene/:id", (req, res) => {
   const netzplanId = parseInt(req.params.id);
 
@@ -85,7 +78,6 @@ app.delete("/netzplaene/:id", (req, res) => {
     if (aktivitaetIds.length > 0) {
       const placeholders = aktivitaetIds.map(() => "?").join(",");
 
-      // Vorgänger-Mappings löschen (als Aktivität ODER als Vorgänger)
       db.run(
         `DELETE FROM vorgaenger_mappings 
          WHERE aktivitaet_id IN (${placeholders}) 
@@ -119,9 +111,6 @@ app.delete("/netzplaene/:id", (req, res) => {
   });
 });
 
-// -------------------
-// Aktivitäten-Endpunkte
-// -------------------
 app.get("/netzplaene/:id/aktivitaeten", (req, res) => {
   const netzplanId = parseInt(req.params.id);
   db.all(
@@ -221,11 +210,9 @@ app.delete("/aktivitaeten/:id", (req, res) => {
   );
 });
 
-// -------------------
-// Server starten
-// -------------------
+
 const PORT = 4000;
-const HOST = '0.0.0.0'; // Listen on all network interfaces
+const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
   console.log(`✅ Backend läuft auf http://localhost:${PORT}`);
