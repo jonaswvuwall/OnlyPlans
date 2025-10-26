@@ -1,4 +1,5 @@
 import Layout from '../ui/Layout';
+import { GanttDiagram } from '../ui/GanttDiagram';
 import { Button } from '../ui/button';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
@@ -202,7 +203,7 @@ interface NetworkPlanData {
   activities: PlanActivity[];
 }
 
-const Visualization: FC = () => {
+const Networkplan: FC = () => {
   const navigate = useNavigate();
   const { planId } = useParams<{ planId: string }>();
   const { t } = useTranslation();
@@ -1051,13 +1052,15 @@ const Visualization: FC = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full mx-auto px-4 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full max-w-none">
           <h1 className="text-5xl font-bold text-white mb-6">
-            {t('visualization.title')}
+            Netzwerkplan
           </h1>
-        
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
-            {planData ? `${t('visualization.project')}: ${planData.planName}` : t('visualization.subtitle')}
+            {planData ? `Projekt: ${planData.planName}` : t('visualization.subtitle')}
           </p>
-                
+          <div className="flex justify-center gap-4 mb-8">
+            <Button onClick={() => navigate(`/networkplan/${planId}`)} className="bg-purple-600 hover:bg-purple-700 transition-all duration-300">Netzwerkplan</Button>
+            <Button onClick={() => navigate(`/gantt/${planId}`)} className="bg-blue-600 hover:bg-blue-700 transition-all duration-300">Gantt-Diagramm</Button>
+          </div>
 
           <div ref={visualizationRef} className="visualization-container">
 
@@ -1143,6 +1146,7 @@ const Visualization: FC = () => {
                     )}
                   </div>
                 </div>
+
 
                 <div className="flex justify-center gap-8 mb-6 text-sm">
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
@@ -1509,4 +1513,4 @@ const Visualization: FC = () => {
   );
 };
 
-export default Visualization;
+export default Networkplan;
