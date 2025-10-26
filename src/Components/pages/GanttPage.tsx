@@ -140,7 +140,7 @@ const GanttPage: React.FC = () => {
                     y2={height - 10}
                     stroke={lineColor}
                     strokeDasharray="3 3"
-                    opacity={0.18}
+                    opacity={1}
                   />
                 </g>
               ))}
