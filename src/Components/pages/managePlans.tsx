@@ -202,14 +202,14 @@ const ManagePlans: FC = () => {
                           className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105"
                           onClick={() => navigate(`/networkplan/${plan.id}`)}
                         >
-                          🗺️ Netzwerkplan
+                          🗺️ Netzplan
                         </Button>
                         <Button
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105"
                           onClick={() => navigate(`/gantt/${plan.id}`)}
                         >
-                          � Gantt-Diagramm
+                          📊 Gantt-Diagramm
                         </Button>
                         <Button 
                           size="sm" 

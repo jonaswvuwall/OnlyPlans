@@ -1,9 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE } from '../../config/api';
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface Activity {
   id: string;
@@ -16,17 +18,19 @@ const ROW_HEIGHT = 38;
 const BAR_HEIGHT = 18;
 const TIME_SCALE = 36;
 
+
 const GanttPage: React.FC = () => {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
-    const [activities, setActivities] = useState<Activity[]>([]);
-    const [planName, setPlanName] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    // Color customization state
-    const [bgColor, setBgColor] = useState('#232046');
-    const [lineColor, setLineColor] = useState('#a5b4fc');
-    const [barColor, setBarColor] = useState('#2563eb');
+  const { t } = useTranslation();
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [planName, setPlanName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  // Color customization state
+  const [bgColor, setBgColor] = useState('#232046');
+  const [lineColor, setLineColor] = useState('#a5b4fc');
+  const [barColor, setBarColor] = useState('#2563eb');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,6 +81,8 @@ const GanttPage: React.FC = () => {
   const maxEnd = Math.max(...activities.map(a => a.start + a.duration), 1);
   const width = Math.max(700, (maxEnd - minStart + 1) * TIME_SCALE + 180);
   const height = activities.length * ROW_HEIGHT + 60;
+
+
 
   return (
     <Layout>
@@ -218,9 +224,8 @@ const GanttPage: React.FC = () => {
             <b>Hinweis:</b> Das Gantt-Diagramm zeigt die Aktivitäten als Balken auf einer Zeitachse. Die Wertetabelle listet alle Aktivitäten mit Start, Ende und Dauer. Die Balken beginnen beim jeweiligen Startzeitpunkt und enden nach der Dauer. Vorgänger werden automatisch berücksichtigt. Nutzen Sie das Diagramm, um den Ablauf und die Parallelität der Aufgaben im Projekt zu erkennen.
           </div>
         </div>
-        <div className="flex gap-4 mt-8">
-          <Button onClick={() => navigate(`/networkplan/${planId}`)} className="bg-purple-600 hover:bg-purple-700 transition-all duration-300">Netzwerkplan</Button>
-          <Button onClick={() => navigate(`/gantt/${planId}`)} className="bg-blue-600 hover:bg-blue-700 transition-all duration-300">Gantt-Diagramm</Button>
+        <div className="flex mt-8">
+          <Button onClick={() => navigate('/manage-plans')} className="bg-gray-600 hover:bg-gray-700 transition-all duration-300">← {t('visualization.backButton')}</Button>
         </div>
       </div>
     </div>
