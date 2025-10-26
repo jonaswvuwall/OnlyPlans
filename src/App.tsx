@@ -9,7 +9,8 @@ import Landing from './Components/pages/landing'
 import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
 import EditPlans from './Components/pages/editPlan'
-import Visualization from './Components/pages/Visualization'
+import Networkplan from './Components/pages/Visualization'
+import GanttPage from './Components/pages/GanttPage'
 import ManagePlans from './Components/pages/managePlans'
 import Support from './Components/pages/support'
 
@@ -49,9 +50,14 @@ function AnimatedRoutes() {
             <EditPlans />
           </PageTransition>
         } />
-        <Route path="/visualization/:planId" element={
+        <Route path="/networkplan/:planId" element={
           <PageTransition>
-            <Visualization />
+            <Networkplan />
+          </PageTransition>
+        } />
+        <Route path="/gantt/:planId" element={
+          <PageTransition>
+            <GanttPage />
           </PageTransition>
         } />
         <Route path="/support" element={

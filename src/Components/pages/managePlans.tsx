@@ -197,13 +197,19 @@ const ManagePlans: FC = () => {
                         >
                           ✏️ {t('editPlans.actions.edit')}
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="border-white/20 text-white hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-105"
-                          onClick={() => handleViewPlan(plan.id)}
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105"
+                          onClick={() => navigate(`/networkplan/${plan.id}`)}
                         >
-                          👁️ {t('editPlans.actions.view')}
+                          🗺️ Netzplan
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 hover:scale-105"
+                          onClick={() => navigate(`/gantt/${plan.id}`)}
+                        >
+                          📊 Gantt-Diagramm
                         </Button>
                         <Button 
                           size="sm" 
