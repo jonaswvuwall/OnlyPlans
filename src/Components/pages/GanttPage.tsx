@@ -7,6 +7,8 @@ import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useTranslation } from '../../hooks/useTranslation';
 
+import PlanAIFeedback from '../ui/PlanAIFeedback';
+
 interface Activity {
   id: string;
   name: string;
@@ -86,6 +88,8 @@ const GanttPage: React.FC = () => {
 
   return (
     <Layout>
+      {/* AI Feedback Button (top right) */}
+      {planId && <PlanAIFeedback planId={planId} />}
       <div className="flex flex-col items-center w-full max-w-5xl mx-auto py-8 px-2">
         <h1 className="text-4xl font-bold text-white mb-6">Gantt-Diagramm</h1>
         <h2 className="text-xl text-white/80 mb-8">Projekt: {planName}</h2>
