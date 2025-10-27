@@ -1,5 +1,4 @@
 import Layout from '../ui/Layout';
-import { GanttDiagram } from '../ui/GanttDiagram';
 import { Button } from '../ui/button';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
