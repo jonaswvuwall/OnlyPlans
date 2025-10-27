@@ -1,6 +1,6 @@
 import Layout from "../ui/Layout";
 import { Button } from "../ui/button";
-import VorgaengerMultiSelect from "./VorgaengerMultiSelect";
+import VorgaengerMultiSelect from "./predecessorMultiSelect";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "../../hooks/useTranslation";
