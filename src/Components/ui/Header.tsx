@@ -48,7 +48,7 @@ const Header: FC = () => {
           bgColor: '#8B5CF6',
           textColor: '#ffffff',
           links: [
-            { label: t('header.startPlanning'), href: '/', ariaLabel: t('header.startPlanningAria') }
+            { label: t('header.startPlanning'), href: '/create-plan', ariaLabel: t('header.startPlanningAria') }
           ]
         }
       ]
