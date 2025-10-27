@@ -16,7 +16,7 @@ const Header: FC = () => {
       bgColor: '#8B5CF6',
       textColor: '#ffffff',
       links: [
-        { label: t('header.planningTools'), href: '/operation', ariaLabel: t('header.planningToolsAria') },
+  { label: t('header.planningTools'), href: '/', ariaLabel: t('header.planningToolsAria') },
         { label: t('header.plannedFeatures'), href: 'https://rickrolllol.yourwebsitespace.com/', ariaLabel: t('header.plannedFeaturesAria') }
       ]
     },
@@ -48,7 +48,7 @@ const Header: FC = () => {
           bgColor: '#8B5CF6',
           textColor: '#ffffff',
           links: [
-            { label: t('header.startPlanning'), href: '/operation', ariaLabel: t('header.startPlanningAria') }
+            { label: t('header.startPlanning'), href: '/', ariaLabel: t('header.startPlanningAria') }
           ]
         }
       ]

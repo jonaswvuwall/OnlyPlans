@@ -2,25 +2,88 @@ import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from './button';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_BASE } from '../../config/api';
 
 const Sidebar: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Schnellzugriff state
+  const [recentPlans, setRecentPlans] = useState<Array<{id: number, name: string}>>([]);
+  const [loadingQuick, setLoadingQuick] = useState(true);
+
+  useEffect(() => {
+    // Fetch last 3 plans for Schnellzugriff
+    axios.get(`${API_BASE}/netzplaene`)
+      .then(res => {
+        const plans = res.data.slice(-3).reverse();
+        setRecentPlans(plans);
+      })
+      .catch(() => setRecentPlans([]))
+      .finally(() => setLoadingQuick(false));
+  }, []);
+
+  // Mini SVG preview for network plan (placeholder, could be improved)
+  const MiniNetzplan = ({ planId }: { planId: number }) => (
+    <svg width="60" height="36" viewBox="0 0 60 36" className="rounded bg-white/10 border border-white/20">
+      <rect x="5" y="10" width="16" height="16" rx="3" fill="#a5b4fc" />
+      <rect x="39" y="10" width="16" height="16" rx="3" fill="#fca5a5" />
+      <line x1="21" y1="18" x2="39" y2="18" stroke="#6366f1" strokeWidth="2" />
+      <circle cx="13" cy="18" r="2" fill="#6366f1" />
+      <circle cx="47" cy="18" r="2" fill="#dc2626" />
+    </svg>
+  );
+
+  const MiniGantt = ({ planId }: { planId: number }) => (
+    <svg width="60" height="36" viewBox="0 0 60 36" className="rounded bg-white/10 border border-white/20">
+      <rect x="8" y="10" width="44" height="6" rx="2" fill="#a5b4fc" />
+      <rect x="8" y="20" width="28" height="6" rx="2" fill="#fca5a5" />
+      <rect x="8" y="28" width="18" height="4" rx="2" fill="#6ee7b7" />
+    </svg>
+  );
+
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-white/10 backdrop-blur-md border-r border-white/20 flex flex-col z-40 shadow-lg">
-      <div className="flex flex-col items-center py-8 gap-8 flex-1">
+      <div className="flex flex-col items-center py-8 gap-8 flex-1 w-full">
         <img
           src="/Logo_small-Photoroom.png"
           alt={t('navigation.logo')}
           className="w-20 h-auto mb-4"
         />
-        <Button className="w-48" onClick={() => navigate('/create-plan')}>
-          🚀 {t('operation.cards.createPlan.button')}
+        <Button className="w-56 h-16 text-lg" onClick={() => navigate('/create-plan')}>
+          <span className="text-2xl">🚀</span> <span>{t('operation.cards.createPlan.button')}</span>
         </Button>
-        <Button className="w-48" onClick={() => navigate('/manage-plans')}>
-          ✏️ {t('operation.cards.editPlans.button')}
+        <Button className="w-56 h-16 text-lg" onClick={() => navigate('/manage-plans')}>
+          <span className="text-2xl">✏️</span> <span>{t('operation.cards.editPlans.button')}</span>
         </Button>
+
+        {/* Schnellzugriff */}
+        <div className="w-full mt-8 px-4">
+          <h3 className="text-white text-xs font-semibold mb-2 tracking-widest uppercase">Schnellzugriff</h3>
+          {loadingQuick ? (
+            <div className="text-white/60 text-xs">Lädt...</div>
+          ) : recentPlans.length === 0 ? (
+            <div className="text-white/40 text-xs">Keine Pläne</div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {recentPlans.map(plan => (
+                <div key={plan.id} className="flex flex-col items-center bg-white/5 rounded-lg p-2 border border-white/10 hover:bg-white/10 transition cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => navigate(`/networkplan/${plan.id}`)} title="Netzplan anzeigen" className="focus:outline-none">
+                      <MiniNetzplan planId={plan.id} />
+                    </button>
+                    <button onClick={() => navigate(`/gantt/${plan.id}`)} title="Gantt-Diagramm anzeigen" className="focus:outline-none">
+                      <MiniGantt planId={plan.id} />
+                    </button>
+                  </div>
+                  <span className="mt-1 text-white text-xs truncate max-w-[110px] text-center w-full" title={plan.name}>{plan.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       {/* Creators at the bottom */}
       <div className="flex flex-col items-center pb-8 px-2 mt-auto">
