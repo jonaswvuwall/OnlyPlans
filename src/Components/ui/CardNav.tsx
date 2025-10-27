@@ -50,12 +50,6 @@ const CardNav: React.FC<CardNavProps> = ({
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
   const isOnLandingPage = location.pathname === '/' || location.pathname === '/home';
-  const buttonText = isOnLandingPage ? t('common.getStarted') : t('common.home');
-  const targetRoute = '/';
-
-  const handleGetStartedClick = () => {
-    navigate(targetRoute);
-  };
 
   const handleLandingClick = () => {
     navigate('/home');
@@ -223,14 +217,7 @@ const CardNav: React.FC<CardNavProps> = ({
                 </button>
               )}
               
-              <button
-                type="button"
-                className="card-nav-cta-button inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 h-[44px] font-medium cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-                onClick={handleGetStartedClick}
-              >
-                {buttonText}
-              </button>
+              {/* Only show Home button if not on landing page */}
             </div>
           </div>
         </div>
