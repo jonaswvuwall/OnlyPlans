@@ -10,7 +10,7 @@ const Landing: FC = () => {
       <div className="flex flex-col items-center px-4 pt-6 pb-12 w-full">
         <div className="relative mb-0 group">
           <img
-            src="/Logo_big-Photoroom.png"
+            src="/Logo_PNG_Big.png"
             alt={t('navigation.logo')}
             className="relative w-180 h-auto max-w-full max-h-180 object-contain transform group-hover:scale-105 transition-transform duration-500"
             style={{

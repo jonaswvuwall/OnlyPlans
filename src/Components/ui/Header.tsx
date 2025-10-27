@@ -58,7 +58,7 @@ const Header: FC = () => {
     <header className="fixed top-0 left-0 right-0 z-50 w-full">
       <div className="w-full pt-4 pb-4 px-4">
         <CardNav
-          logo="/Logo_small-Photoroom.png"
+          logo="/Logo_PNG_Tiny.PNG"
           logoAlt={t('header.logoAlt')}
           items={navItemsWithGetStarted}
           baseColor="#D3D3D3"

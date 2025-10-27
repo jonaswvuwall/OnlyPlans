@@ -26,7 +26,7 @@ const Sidebar: FC = () => {
   }, []);
 
   // Mini SVG preview for network plan (placeholder, could be improved)
-  const MiniNetzplan = ({ planId }: { planId: number }) => (
+  const MiniNetzplan = () => (
     <svg width="60" height="36" viewBox="0 0 60 36" className="rounded bg-white/10 border border-white/20">
       <rect x="5" y="10" width="16" height="16" rx="3" fill="#a5b4fc" />
       <rect x="39" y="10" width="16" height="16" rx="3" fill="#fca5a5" />
@@ -36,7 +36,7 @@ const Sidebar: FC = () => {
     </svg>
   );
 
-  const MiniGantt = ({ planId }: { planId: number }) => (
+  const MiniGantt = () => (
     <svg width="60" height="36" viewBox="0 0 60 36" className="rounded bg-white/10 border border-white/20">
       <rect x="8" y="10" width="44" height="6" rx="2" fill="#a5b4fc" />
       <rect x="8" y="20" width="28" height="6" rx="2" fill="#fca5a5" />
@@ -48,7 +48,7 @@ const Sidebar: FC = () => {
     <aside className="fixed left-0 top-0 h-full w-64 bg-white/10 backdrop-blur-md border-r border-white/20 flex flex-col z-40 shadow-lg">
       <div className="flex flex-col items-center py-8 gap-8 flex-1 w-full">
         <img
-          src="/Logo_small-Photoroom.png"
+          src="/Logo_PNG_Small.PNG"
           alt={t('navigation.logo')}
           className="w-20 h-auto mb-4"
         />
@@ -72,10 +72,10 @@ const Sidebar: FC = () => {
                 <div key={plan.id} className="flex flex-col items-center bg-white/5 rounded-lg p-2 border border-white/10 hover:bg-white/10 transition cursor-pointer">
                   <div className="flex items-center gap-2">
                     <button onClick={() => navigate(`/networkplan/${plan.id}`)} title="Netzplan anzeigen" className="focus:outline-none">
-                      <MiniNetzplan planId={plan.id} />
+                      <MiniNetzplan />
                     </button>
                     <button onClick={() => navigate(`/gantt/${plan.id}`)} title="Gantt-Diagramm anzeigen" className="focus:outline-none">
-                      <MiniGantt planId={plan.id} />
+                      <MiniGantt />
                     </button>
                   </div>
                   <span className="mt-1 text-white text-xs truncate max-w-[110px] text-center w-full" title={plan.name}>{plan.name}</span>

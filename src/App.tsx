@@ -14,6 +14,7 @@ import Networkplan from './Components/pages/networkPlan'
 import GanttPage from './Components/pages/GanttPage'
 import ManagePlans from './Components/pages/managePlans'
 import Support from './Components/pages/support'
+import UserSidebar from './Components/ui/UserSidebar';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -83,6 +84,9 @@ function App() {
             <div className="flex-1 flex flex-col">
               <Header />
               <AnimatedRoutes />
+            </div>
+            <div className="hidden md:block">
+              <UserSidebar />
             </div>
           </div>
         </BackgroundWrapper>
