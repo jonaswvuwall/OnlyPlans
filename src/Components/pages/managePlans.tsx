@@ -76,11 +76,7 @@ const ManagePlans: FC = () => {
   const handleEditPlan = (planId: number) => {
     navigate(`/edit-plan/${planId}`);
   };
-
-  const handleViewPlan = (planId: number) => {
-    navigate(`/visualization/${planId}`);
-  };
-
+  
   const handleDeletePlan = async (planId: number, planName: string) => {
     const confirmDelete = window.confirm(
       t('editPlans.deleteConfirmation').replace('{planName}', planName)

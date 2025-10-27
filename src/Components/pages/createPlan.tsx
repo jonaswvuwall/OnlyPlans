@@ -1,5 +1,6 @@
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
+import VorgaengerMultiSelect from './predecessorMultiSelect';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -178,22 +179,12 @@ const CreatePlan: FC = () => {
                         />
                       </td>
                       <td className="p-3">
-                        {activities.filter(x => x.id !== a.id).map(prev => (
-                          <label key={prev.id} className="inline-flex items-center mr-4 text-white">
-                            <input
-                              type="checkbox"
-                              className="mr-2"
-                              checked={a.vorgaenger.includes(prev.referenceNumber)}
-                              onChange={e => {
-                                const newVorgaenger = e.target.checked
-                                  ? [...a.vorgaenger, prev.referenceNumber]
-                                  : a.vorgaenger.filter(v => v !== prev.referenceNumber);
-                                updateActivity(a.id, 'vorgaenger', newVorgaenger);
-                              }}
-                            />
-                            <span>{prev.referenceNumber} {prev.activityName || ''}</span>
-                          </label>
-                        ))}
+                        <VorgaengerMultiSelect
+                          activities={activities}
+                          activity={a}
+                          updateActivity={updateActivity}
+                          t={t}
+                        />
                       </td>
                       <td className="p-3">
                         {activities.length > 1 && (

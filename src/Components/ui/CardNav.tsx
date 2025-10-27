@@ -51,7 +51,7 @@ const CardNav: React.FC<CardNavProps> = ({
 
   const isOnLandingPage = location.pathname === '/' || location.pathname === '/home';
   const buttonText = isOnLandingPage ? t('common.getStarted') : t('common.home');
-  const targetRoute = isOnLandingPage ? '/operation' : '/operation';
+  const targetRoute = '/';
 
   const handleGetStartedClick = () => {
     navigate(targetRoute);

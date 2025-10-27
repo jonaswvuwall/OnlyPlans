@@ -36,36 +36,42 @@ const GanttPage: React.FC = () => {
     const fetchData = async () => {
       try {
         const plansRes = await axios.get(`${API_BASE}/netzplaene`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const plan = plansRes.data.find((p: any) => p.id === parseInt(planId!));
         if (!plan) throw new Error('Plan not found');
         setPlanName(plan.name);
         const actsRes = await axios.get(`${API_BASE}/netzplaene/${planId}/aktivitaeten`);
         const acts = actsRes.data;
         // Simple Gantt logic: sort by ref_number, calculate start by Vorgänger (max end of predecessors)
-        const mapped = acts.map((a: any) => ({
-          id: a.id,
+        type RawActivity = { id: string | number; name: string; dauer: string | number; ref_number: number; vorgaenger?: (string | number)[] };
+        const mapped = (acts as RawActivity[]).map((a) => ({
+          id: String(a.id),
           name: a.name,
-          duration: parseFloat(a.dauer) || 0,
+          duration: typeof a.dauer === 'number' ? a.dauer : parseFloat(a.dauer) || 0,
           ref_number: a.ref_number,
-          vorgaenger: a.vorgaenger || [],
+          vorgaenger: Array.isArray(a.vorgaenger) ? a.vorgaenger.map(String) : [],
+          start: 0,
         }));
-        mapped.sort((a: any, b: any) => a.ref_number - b.ref_number);
-        // Calculate start times
-        const idToActivity: Record<string, any> = {};
-        mapped.forEach((a: any) => { idToActivity[a.id] = a; });
-        mapped.forEach((a: any) => {
+        mapped.sort((a, b) => a.ref_number - b.ref_number);
+        // Calculate start times robustly
+        const idToActivity: Record<string, typeof mapped[0]> = {};
+        mapped.forEach((a) => { idToActivity[a.id] = a; });
+        mapped.forEach((a) => {
           if (!a.vorgaenger || a.vorgaenger.length === 0) {
             a.start = 0;
           } else {
-            a.start = Math.max(...a.vorgaenger.map((vid: string) => {
-              const pred = idToActivity[vid];
-              return pred ? (pred.start + pred.duration) : 0;
-            }));
+            a.start = Math.max(
+              0,
+              ...a.vorgaenger.map((vid) => {
+                const pred = idToActivity[vid];
+                return pred ? (pred.start + pred.duration) : 0;
+              })
+            );
           }
         });
         setActivities(mapped);
-      } catch (e: any) {
-        setError(e.message || 'Error loading data');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Error loading data');
       } finally {
         setLoading(false);
       }
@@ -79,14 +85,16 @@ const GanttPage: React.FC = () => {
   // Zeitachse bestimmen
   const minStart = 0;
   const maxEnd = Math.max(...activities.map(a => a.start + a.duration), 1);
-  const width = Math.max(700, (maxEnd - minStart + 1) * TIME_SCALE + 180);
+  // Mehr Platz links/rechts: Offset erhöhen
+  const LEFT_OFFSET = 220;
+  const width = Math.max(1100, (maxEnd - minStart + 1) * TIME_SCALE + LEFT_OFFSET + 80);
   const height = activities.length * ROW_HEIGHT + 60;
 
 
 
   return (
     <Layout>
-      <div className="flex flex-col items-center w-full max-w-5xl mx-auto py-8 px-2">
+      <div className="flex flex-col items-center w-full max-w-7xl mx-auto py-8 px-2">
         <h1 className="text-4xl font-bold text-white mb-6">Gantt-Diagramm</h1>
         <h2 className="text-xl text-white/80 mb-8">Projekt: {planName}</h2>
           <div className="w-full flex flex-col items-center">
@@ -104,18 +112,20 @@ const GanttPage: React.FC = () => {
                 <input type="color" value={barColor} onChange={e => setBarColor(e.target.value)} className="w-7 h-7 rounded border-none outline-none" />
               </label>
             </div>
-            <div style={{ width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
               <svg
-                width={width}
+                width="98%"
                 height={height}
+                viewBox={`0 0 ${width} ${height}`}
                 style={{
                   background: bgColor,
                   borderRadius: 16,
                   boxShadow: '0 4px 24px #0006',
                   margin: '24px 0',
-                  minWidth: 700,
-                  maxWidth: '100%',
+                  minWidth: 1100,
+                  maxWidth: '98vw',
                   border: '1.5px solid #312e81',
+                  display: 'block',
                 }}
               >
             {/* Zeitachse */}
@@ -123,7 +133,7 @@ const GanttPage: React.FC = () => {
               {Array.from({ length: maxEnd - minStart + 1 }).map((_, i) => (
                 <g key={i}>
                   <text
-                    x={150 + i * TIME_SCALE + TIME_SCALE / 2}
+                    x={LEFT_OFFSET + i * TIME_SCALE + TIME_SCALE / 2}
                     y={34}
                     textAnchor="middle"
                     fontSize={13}
@@ -134,9 +144,9 @@ const GanttPage: React.FC = () => {
                     {minStart + i}
                   </text>
                   <line
-                    x1={150 + i * TIME_SCALE}
+                    x1={LEFT_OFFSET + i * TIME_SCALE}
                     y1={44}
-                    x2={150 + i * TIME_SCALE}
+                    x2={LEFT_OFFSET + i * TIME_SCALE}
                     y2={height - 10}
                     stroke={lineColor}
                     strokeDasharray="3 3"
@@ -150,7 +160,7 @@ const GanttPage: React.FC = () => {
               <g key={a.id}>
                 {/* Name links */}
                 <text
-                  x={20}
+                  x={32}
                   y={ROW_HEIGHT * idx + 48 + 2}
                   fontSize={15}
                   fill="#fff"
@@ -161,7 +171,7 @@ const GanttPage: React.FC = () => {
                 </text>
                 {/* Balken */}
                 <rect
-                  x={150 + (a.start - minStart) * TIME_SCALE}
+                  x={LEFT_OFFSET + (a.start - minStart) * TIME_SCALE}
                   y={ROW_HEIGHT * idx + 48 - BAR_HEIGHT / 2}
                   width={Math.max(8, a.duration * TIME_SCALE)}
                   height={BAR_HEIGHT}
@@ -171,7 +181,7 @@ const GanttPage: React.FC = () => {
                 />
                 {/* Dauer auf Balken */}
                 <text
-                  x={150 + (a.start - minStart) * TIME_SCALE + 8}
+                  x={LEFT_OFFSET + (a.start - minStart) * TIME_SCALE + 8}
                   y={ROW_HEIGHT * idx + 48 + 6}
                   fontSize={13}
                   fill="#fff"

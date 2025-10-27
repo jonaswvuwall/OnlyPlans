@@ -4,15 +4,16 @@ import { TranslationProvider } from './contexts/TranslationContext'
 import BackgroundWrapper from './Components/ui/background'
 import Header from './Components/ui/Header'
 import PageTransition from './Components/ui/PageTransition'
+import Sidebar from './Components/ui/Sidebar'
 import './App.css'
 import Landing from './Components/pages/landing'
-import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
 import EditPlans from './Components/pages/editPlan'
-import Networkplan from './Components/pages/Visualization'
+import Networkplan from './Components/pages/networkPlan'
 import GanttPage from './Components/pages/GanttPage'
 import ManagePlans from './Components/pages/managePlans'
 import Support from './Components/pages/support'
+import UserSidebar from './Components/ui/UserSidebar';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -28,11 +29,6 @@ function AnimatedRoutes() {
         <Route path="/home" element={
           <PageTransition>
             <Landing />
-          </PageTransition>
-        } />
-        <Route path="/operation" element={
-          <PageTransition>
-            <Operation />
           </PageTransition>
         } />
         <Route path="/create-plan" element={
@@ -75,8 +71,18 @@ function App() {
     <TranslationProvider>
       <Router>
         <BackgroundWrapper>
-          <Header />
-          <AnimatedRoutes />
+          <div className="flex w-full min-h-screen">
+            <div className="hidden md:block">
+              <Sidebar />
+            </div>
+            <div className="flex-1 flex flex-col">
+              <Header />
+              <AnimatedRoutes />
+            </div>
+            <div className="hidden md:block">
+              <UserSidebar />
+            </div>
+          </div>
         </BackgroundWrapper>
       </Router>
     </TranslationProvider>

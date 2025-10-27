@@ -1051,13 +1051,13 @@ const Networkplan: FC = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full mx-auto px-4 min-h-[calc(100vh-200px)]">
         <div className="text-center space-y-8 w-full max-w-none">
           <h1 className="text-5xl font-bold text-white mb-6">
-            Netzwerkplan
+            Netzplan
           </h1>
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
             {planData ? `Projekt: ${planData.planName}` : t('visualization.subtitle')}
           </p>
           <div className="flex justify-center gap-4 mb-8">
-            <Button onClick={() => navigate(`/networkplan/${planId}`)} className="bg-purple-600 hover:bg-purple-700 transition-all duration-300">Netzwerkplan</Button>
+            <Button onClick={() => navigate(`/networkplan/${planId}`)} className="bg-purple-600 hover:bg-purple-700 transition-all duration-300">Netzplan</Button>
             <Button onClick={() => navigate(`/gantt/${planId}`)} className="bg-blue-600 hover:bg-blue-700 transition-all duration-300">Gantt-Diagramm</Button>
           </div>
 
