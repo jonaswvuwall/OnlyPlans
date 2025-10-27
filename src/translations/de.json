@@ -67,7 +67,8 @@
     "visualizePlan": "Plan Visualisieren",
     "savePlan": "Plan Speichern",
     "planSaved": "Plan gespeichert! (Dies ist ein Platzhalter - die tatsächliche Speicherfunktion wird später implementiert)",
-    "selectPredecessor": "Vorgänger auswählen"
+    "selectPredecessor": "Vorgänger auswählen",
+    "noPredecessors": "Keine Vorgänger verfügbar"
   },
   "visualization": {
     "title": "Netzplan-Analyse",

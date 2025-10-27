@@ -7,7 +7,6 @@ import PageTransition from './Components/ui/PageTransition'
 import Sidebar from './Components/ui/Sidebar'
 import './App.css'
 import Landing from './Components/pages/landing'
-import Operation from './Components/pages/operation'
 import CreatePlan from './Components/pages/createPlan'
 import EditPlans from './Components/pages/editPlan'
 import Networkplan from './Components/pages/networkPlan'
@@ -30,11 +29,6 @@ function AnimatedRoutes() {
         <Route path="/home" element={
           <PageTransition>
             <Landing />
-          </PageTransition>
-        } />
-        <Route path="/operation" element={
-          <PageTransition>
-            <Operation />
           </PageTransition>
         } />
         <Route path="/create-plan" element={
