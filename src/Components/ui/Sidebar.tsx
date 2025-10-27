@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from './button';
 import { useEffect, useState } from 'react';
@@ -14,6 +14,7 @@ const Sidebar: FC = () => {
   const [recentPlans, setRecentPlans] = useState<Array<{id: number, name: string}>>([]);
   const [loadingQuick, setLoadingQuick] = useState(true);
 
+  const location = useLocation();
   useEffect(() => {
     // Fetch last 3 plans for Schnellzugriff
     axios.get(`${API_BASE}/netzplaene`)
@@ -23,7 +24,7 @@ const Sidebar: FC = () => {
       })
       .catch(() => setRecentPlans([]))
       .finally(() => setLoadingQuick(false));
-  }, []);
+  }, [location.pathname]);
 
   // Mini SVG preview for network plan (placeholder, could be improved)
   const MiniNetzplan = () => (
