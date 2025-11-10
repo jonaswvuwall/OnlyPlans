@@ -1,11 +1,13 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE } from '../../config/api';
 import Layout from '../ui/Layout';
 import { Button } from '../ui/button';
 import { useTranslation } from '../../hooks/useTranslation';
+import { saveAs } from 'file-saver';
+import { Download } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -27,6 +29,9 @@ const GanttPage: React.FC = () => {
   const [planName, setPlanName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   // Color customization state
   const [bgColor, setBgColor] = useState('#232046');
   const [lineColor, setLineColor] = useState('#a5b4fc');
@@ -79,6 +84,129 @@ const GanttPage: React.FC = () => {
     fetchData();
   }, [planId]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showExportMenu && !(event.target as Element)?.closest('.relative')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showExportMenu]);
+
+  // Export function
+  const handleExport = async (format: 'png' | 'jpg' | 'pdf') => {
+    console.log('Starting export process for format:', format);
+    
+    if (!exportRef.current || !planName) {
+      console.error('Missing export ref or plan data');
+      return;
+    }
+    
+    setIsExporting(true);
+    setShowExportMenu(false);
+    
+    try {
+      const svgElement = exportRef.current.querySelector('svg');
+      
+      if (!svgElement) {
+        throw new Error('SVG element not found');
+      }
+
+      // Get SVG dimensions
+      const svgWidth = svgElement.getAttribute('width') || svgElement.clientWidth;
+      const svgHeight = svgElement.getAttribute('height') || svgElement.clientHeight;
+      
+      // Create a serialized SVG
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      // Set canvas size based on SVG viewBox or dimensions
+      const viewBox = svgElement.getAttribute('viewBox');
+      let width = parseInt(String(svgWidth));
+      let height = parseInt(String(svgHeight));
+      
+      if (viewBox) {
+        const [, , vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+        width = vbWidth;
+        height = vbHeight;
+      }
+      
+      canvas.width = width * 2; // Scale for better quality
+      canvas.height = height * 2;
+      
+      if (ctx) {
+        ctx.scale(2, 2);
+        // Fill background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, width, height);
+      }
+      
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      img.onload = function() {
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          
+          switch (format) {
+            case 'png': {
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  saveAs(blob, `${planName}_gantt_diagram.png`);
+                } else {
+                  throw new Error('Failed to create PNG blob');
+                }
+                setIsExporting(false);
+              });
+              break;
+            }
+              
+            case 'jpg': {
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  saveAs(blob, `${planName}_gantt_diagram.jpg`);
+                } else {
+                  throw new Error('Failed to create JPG blob');
+                }
+                setIsExporting(false);
+              }, 'image/jpeg', 0.95);
+              break;
+            }
+              
+            case 'pdf': {
+              // PDF export would require additional library like jsPDF
+              alert('PDF export coming soon!');
+              setIsExporting(false);
+              break;
+            }
+          }
+        }
+        URL.revokeObjectURL(url);
+      };
+      
+      img.onerror = function() {
+        console.error('Failed to load SVG image');
+        alert(t('visualization.exportErrors.pngFailed') || 'Export fehlgeschlagen. Bitte versuchen Sie es erneut.');
+        setIsExporting(false);
+      };
+      
+      img.src = url;
+      
+    } catch (error) {
+      console.error(`Error exporting as ${format.toUpperCase()}:`, error);
+      const errorKey = `visualization.exportErrors.${format}Failed`;
+      alert(t(errorKey) || `Export als ${format.toUpperCase()} fehlgeschlagen. Bitte versuchen Sie es erneut.`);
+      setIsExporting(false);
+    }
+  };
+
   if (loading) return <Layout><div className="text-white p-8 text-center">Lade Daten...</div></Layout>;
   if (error) return <Layout><div className="text-red-400 p-8 text-center">{error}</div></Layout>;
 
@@ -97,6 +225,59 @@ const GanttPage: React.FC = () => {
       <div className="flex flex-col items-center w-full max-w-7xl mx-auto py-8 px-2">
         <h1 className="text-4xl font-bold text-white mb-6">Gantt-Diagramm</h1>
         <h2 className="text-xl text-white/80 mb-8">Projekt: {planName}</h2>
+        
+        {/* Export Button */}
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <Button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={isExporting}
+              className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+            >
+              <Download size={18} />
+              {isExporting ? t('visualization.exporting') : t('visualization.exportPlan')}
+              {!isExporting && (
+                <span className="ml-1 text-sm">▼</span>
+              )}
+            </Button>
+            
+            {showExportMenu && !isExporting && (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-50 shadow-xl">
+                <button
+                  onClick={() => handleExport('png')}
+                  className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors border-b border-white/10 flex items-center gap-3"
+                >
+                  <span className="text-lg">📸</span>
+                  <div>
+                    <div className="font-medium">{t('visualization.exportOptions.png.title')}</div>
+                    <div className="text-xs text-white/60">{t('visualization.exportOptions.png.description')}</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleExport('jpg')}
+                  className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors border-b border-white/10 flex items-center gap-3"
+                >
+                  <span className="text-lg">🖼️</span>
+                  <div>
+                    <div className="font-medium">{t('visualization.exportOptions.jpg.title')}</div>
+                    <div className="text-xs text-white/60">{t('visualization.exportOptions.jpg.description')}</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors flex items-center gap-3"
+                >
+                  <span className="text-lg">📄</span>
+                  <div>
+                    <div className="font-medium">{t('visualization.exportOptions.pdf.title')}</div>
+                    <div className="text-xs text-white/60">{t('visualization.exportOptions.pdf.description')}</div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        
           <div className="w-full flex flex-col items-center">
             <div className="flex flex-wrap gap-6 mb-4 items-center justify-center bg-white/5 border border-white/10 rounded-lg p-4">
               <label className="flex items-center gap-2 text-white text-sm">
@@ -112,7 +293,7 @@ const GanttPage: React.FC = () => {
                 <input type="color" value={barColor} onChange={e => setBarColor(e.target.value)} className="w-7 h-7 rounded border-none outline-none" />
               </label>
             </div>
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }} ref={exportRef}>
               <svg
                 width="98%"
                 height={height}
