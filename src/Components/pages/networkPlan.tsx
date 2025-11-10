@@ -45,10 +45,10 @@ interface NetworkActivity extends PlanActivity {
   isCritical: boolean;
 }
 
-const NODE_WIDTH = 200;     
-const NODE_HEIGHT = 155;    
-const LEVEL_SPACING = 260;   
-const NODE_VERTICAL_SPACING = 160; 
+const NODE_WIDTH = 180;     
+const NODE_HEIGHT = 120;    
+const LEVEL_SPACING = 300;   
+const NODE_VERTICAL_SPACING = 200; 
 const START_X = 120;         
 const START_Y = 100;        
 
@@ -650,77 +650,126 @@ const Networkplan: FC = () => {
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         onMouseDown={(e) => handleMouseDown(e, activity.id)}
       >
+        {/* Shadow */}
         <rect
           x={-nodeWidth/2 + 3}
           y={-nodeHeight/2 + 3}
           width={nodeWidth}
           height={nodeHeight}
-          fill="rgba(0, 0, 0, 0.15)"
-          rx="10"
-          opacity="0.6"
+          fill="rgba(0, 0, 0, 0.2)"
+          rx="2"
         />
         
-        <defs>
-          <linearGradient id={`nodeGradient-${activity.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            {activity.isCritical ? (
-              <>
-                <stop offset="0%" stopColor="#ffffff" />
-                <stop offset="50%" stopColor="#fef2f2" />
-                <stop offset="100%" stopColor="#fee2e2" />
-              </>
-            ) : (
-              <>
-                <stop offset="0%" stopColor="#ffffff" />
-                <stop offset="50%" stopColor="#f8fafc" />
-                <stop offset="100%" stopColor="#f1f5f9" />
-              </>
-            )}
-          </linearGradient>
-        </defs>
-        
-        {/* Main node rectangle */}
+        {/* Main node rectangle - white background */}
         <rect
           x={-nodeWidth/2}
           y={-nodeHeight/2}
           width={nodeWidth}
           height={nodeHeight}
-          fill={`url(#nodeGradient-${activity.id})`}
-          stroke={activity.isCritical ? "#dc2626" : "#64748b"}
-          strokeWidth={activity.isCritical ? "2.5" : "1.5"}
-          rx="10"
-          filter="drop-shadow(0 3px 6px rgba(0, 0, 0, 0.08))"
+          fill="white"
+          stroke={activity.isCritical ? "#dc2626" : "#1f2937"}
+          strokeWidth={activity.isCritical ? "3" : "2"}
+          rx="2"
         />
         
-        {/* Header section with reference number and duration */}
-        <rect
-          x={-nodeWidth/2}
-          y={-nodeHeight/2}
-          width={nodeWidth}
-          height={30}
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
-          rx="10"
+        {/* Vertical divider lines (creating 3 columns) */}
+        <line
+          x1={-nodeWidth/6}
+          y1={-nodeHeight/2}
+          x2={-nodeWidth/6}
+          y2={nodeHeight/2}
+          stroke={activity.isCritical ? "#dc2626" : "#1f2937"}
+          strokeWidth="1.5"
         />
-        <rect
-          x={-nodeWidth/2}
-          y={-nodeHeight/2 + 22}
-          width={nodeWidth}
-          height={8}
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
+        <line
+          x1={nodeWidth/6}
+          y1={-nodeHeight/2}
+          x2={nodeWidth/6}
+          y2={nodeHeight/2}
+          stroke={activity.isCritical ? "#dc2626" : "#1f2937"}
+          strokeWidth="1.5"
         />
         
-        {/* Reference number */}
+        {/* Horizontal divider lines (creating 3 rows) */}
+        <line
+          x1={-nodeWidth/2}
+          y1={-nodeHeight/6}
+          x2={nodeWidth/2}
+          y2={-nodeHeight/6}
+          stroke={activity.isCritical ? "#dc2626" : "#1f2937"}
+          strokeWidth="1.5"
+        />
+        <line
+          x1={-nodeWidth/2}
+          y1={nodeHeight/6}
+          x2={nodeWidth/2}
+          y2={nodeHeight/6}
+          stroke={activity.isCritical ? "#dc2626" : "#1f2937"}
+          strokeWidth="1.5"
+        />
+        
+        {/* Row 1, Column 1: FAZ */}
+        <text
+          x={-nodeWidth/3}
+          y={-nodeHeight/2 + nodeHeight/6}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="15"
+          fontWeight="bold"
+        >{activity.faz}</text>
+        
+        {/* Row 1, Column 2: Activity Name (spans center) */}
+        <text
+          x={0}
+          y={-nodeHeight/2 + nodeHeight/6}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="10"
+          fontWeight="bold"
+        >
+          {activity.activityName.length > 10 ? activity.activityName.substring(0, 8) + '...' : activity.activityName}
+        </text>
+        
+        {/* Row 1, Column 3: FEZ */}
+        <text
+          x={nodeWidth/3}
+          y={-nodeHeight/2 + nodeHeight/6}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="15"
+          fontWeight="bold"
+        >{activity.fez}</text>
+        
+        {/* Row 2, Column 1: GP (Total Buffer) */}
+        <text
+          x={-nodeWidth/3}
+          y={0}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={activity.totalFloat === 0 ? "#dc2626" : "#22c55e"}
+          fontSize="11"
+          fontWeight="bold"
+        >
+          GP={activity.totalFloat}
+        </text>
+        
+        {/* Row 2, Column 2: Activity Number */}
         <circle
-          cx={-nodeWidth/2 + 24}
-          cy={-nodeHeight/2 + 16}
-          r="11"
-          fill="rgba(255, 255, 255, 0.2)"
-          stroke="rgba(255, 255, 255, 0.5)"
+          cx={0}
+          cy={0}
+          r="13"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          stroke="white"
           strokeWidth="1"
         />
         <text
-          x={-nodeWidth/2 + 24}
-          y={-nodeHeight/2 + 20}
+          x={0}
+          y={0}
           textAnchor="middle"
+          dominantBaseline="middle"
           fill="white"
           fontSize="11"
           fontWeight="bold"
@@ -728,187 +777,53 @@ const Networkplan: FC = () => {
           {activity.referenceNumber}
         </text>
         
-        {/* Duration badge */}
-        <rect
-          x={nodeWidth/2 - 60}
-          y={-nodeHeight/2 + 7}
-          width={50}
-          height={16}
-          fill="rgba(255, 255, 255, 0.2)"
-          rx="8"
-          stroke="rgba(255, 255, 255, 0.3)"
-          strokeWidth="1"
-        />
+        {/* Row 2, Column 3: FP (Free Buffer) */}
         <text
-          x={nodeWidth/2 - 35}
-          y={-nodeHeight/2 + 19}
+          x={nodeWidth/3}
+          y={0}
           textAnchor="middle"
-          fill="white"
-          fontSize="10"
+          dominantBaseline="middle"
+          fill={activity.freeFloat === 0 ? "#dc2626" : "#22c55e"}
+          fontSize="11"
           fontWeight="bold"
         >
-          {t('visualization.networkPlan.durationShort')}={activity.duration}
+          FP={activity.freeFloat}
         </text>
         
-        {/* Top left quadrant background (ES) */}
-        <rect
-          x={-nodeWidth/2 + 6}
-          y={-nodeHeight/2 + 40}
-          width={nodeWidth/2 - 12}
-          height={24}
-          fill="rgba(255, 255, 255, 0.05)"
-          rx="5"
-          opacity="0.8"
-        />
-        
-        {/* Top right quadrant background (EF) */}
-        <rect
-          x={6}
-          y={-nodeHeight/2 + 40}
-          width={nodeWidth/2 - 12}
-          height={24}
-          fill="rgba(255, 255, 255, 0.05)"
-          rx="5"
-          opacity="0.8"
-        />
-        
-        {/* Bottom left quadrant background (LS) */}
-        <rect
-          x={-nodeWidth/2 + 6}
-          y={-nodeHeight/2 + 100}
-          width={nodeWidth/2 - 12}
-          height={24}
-          fill="rgba(255, 255, 255, 0.05)"
-          rx="5"
-          opacity="0.8"
-        />
-        
-        {/* Bottom right quadrant background (LF) */}
-        <rect
-          x={6}
-          y={-nodeHeight/2 + 100}
-          width={nodeWidth/2 - 12}
-          height={24}
-          fill="rgba(255, 255, 255, 0.05)"
-          rx="5"
-          opacity="0.8"
-        />
-        
-        {/* FAZ (Frühester Anfang) - Top Left */}
+        {/* Row 3, Column 1: SAZ */}
         <text
-          x={-nodeWidth/4}
-          y={-nodeHeight/2 + 46}
+          x={-nodeWidth/3}
+          y={nodeHeight/2 - nodeHeight/6}
           textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
-          fontSize="9"
-          fontWeight="600"
-        >{t('visualization.networkPlan.es')}</text>
-        <text
-          x={-nodeWidth/4}
-          y={-nodeHeight/2 + 60}
-          textAnchor="middle"
+          dominantBaseline="middle"
           fill={activity.isCritical ? "#dc2626" : "#1f2937"}
-          fontSize="14"
-          fontWeight="bold"
-        >{activity.faz}</text>
-        
-        {/* EF (Earliest Finish) - Top Right */}
-        <text
-          x={nodeWidth/4}
-          y={-nodeHeight/2 + 46}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
-          fontSize="9"
-          fontWeight="600"
-        >{t('visualization.networkPlan.ef')}</text>
-        <text
-          x={nodeWidth/4}
-          y={-nodeHeight/2 + 60}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
-          fontSize="14"
-          fontWeight="bold"
-        >{activity.fez}</text>
-        
-        {/* Beautiful Activity Name Section - Center Focus */}
-        <rect
-          x={-nodeWidth/2 + 10}
-          y={-nodeHeight/2 + 64}
-          width={nodeWidth - 20}
-          height={28}
-          fill="rgba(255, 255, 255, 0.95)"
-          rx="10"
-          stroke={activity.isCritical ? "#dc2626" : "#64748b"}
-          strokeWidth="1.5"
-          filter="drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1))"
-        />
-        <text
-          x={0}
-          y={-nodeHeight/2 + 83}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
-          fontSize="12"
-          fontWeight="700"
-          letterSpacing="0.2px"
-        >
-          {activity.activityName.length > 18 ? activity.activityName.substring(0, 18) + '...' : activity.activityName}
-        </text>
-        
-        {/* LS (Latest Start) - Bottom Left */}
-        <text
-          x={-nodeWidth/4}
-          y={-nodeHeight/2 + 106}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
-          fontSize="9"
-          fontWeight="600"
-        >{t('visualization.networkPlan.ls')}</text>
-        <text
-          x={-nodeWidth/4}
-          y={-nodeHeight/2 + 120}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
-          fontSize="14"
+          fontSize="15"
           fontWeight="bold"
         >{activity.saz}</text>
         
-        {/* LF (Latest Finish) - Bottom Right */}
-        <text
-          x={nodeWidth/4}
-          y={-nodeHeight/2 + 106}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#64748b"}
-          fontSize="9"
-          fontWeight="600"
-        >{t('visualization.networkPlan.lf')}</text>
-        <text
-          x={nodeWidth/4}
-          y={-nodeHeight/2 + 120}
-          textAnchor="middle"
-          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
-          fontSize="14"
-          fontWeight="bold"
-        >{activity.sez}</text>
-        
-        {/* Buffer Information (Bottom Section) */}
-        <rect
-          x={-nodeWidth/2 + 10}
-          y={-nodeHeight/2 + 128}
-          width={nodeWidth - 20}
-          height={18}
-          fill={activity.totalFloat === 0 ? "rgba(220, 38, 38, 0.1)" : "rgba(34, 197, 94, 0.1)"}
-          rx="6"
-          stroke={activity.totalFloat === 0 ? "rgba(220, 38, 38, 0.3)" : "rgba(34, 197, 94, 0.3)"}
-          strokeWidth="1"
-        />
+        {/* Row 3, Column 2: Duration (D) */}
         <text
           x={0}
-          y={-nodeHeight/2 + 141}
+          y={nodeHeight/2 - nodeHeight/6}
           textAnchor="middle"
-          fill={activity.totalFloat === 0 ? "#dc2626" : "#059669"}
-          fontSize="10"
-          fontWeight="600"
-        >{t('visualization.table.headers.tf')}: {activity.totalFloat} | {t('visualization.table.headers.ff')}: {activity.freeFloat}</text>
+          dominantBaseline="middle"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="11"
+          fontWeight="bold"
+        >
+          D={activity.duration}
+        </text>
+        
+        {/* Row 3, Column 3: SEZ */}
+        <text
+          x={nodeWidth/3}
+          y={nodeHeight/2 - nodeHeight/6}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={activity.isCritical ? "#dc2626" : "#1f2937"}
+          fontSize="15"
+          fontWeight="bold"
+        >{activity.sez}</text>
       </g>
     );
   };
